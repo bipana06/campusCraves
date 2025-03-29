@@ -32,3 +32,6 @@ inserted_id = collection.insert_one(new_document).inserted_id
 
 print(f"New document inserted with _id: {inserted_id}")
 
+
+
+print("something new")
