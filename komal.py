@@ -1,1 +1,3 @@
-print("aabaran")
+=======
+print("komal")
+
