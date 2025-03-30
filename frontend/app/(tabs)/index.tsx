@@ -82,6 +82,7 @@ export default function HomeScreen() {
     return (
         <View>
             <Button title="Post Food" onPress={() => router.push("../screens/FoodPostScreen")} />
+            <Button title="View Marketplace" onPress={() => router.push("../screens/MarketPlaceScreen")} />
         </View>
     );
 }
