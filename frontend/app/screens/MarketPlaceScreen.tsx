@@ -5,6 +5,7 @@ import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, Button, Tex
     Modal,
     TouchableOpacity,} from "react-native";
 import { getFoodItems, reserveFood, searchFoodItems } from "../apiService";
+import { useRouter } from "expo-router";
 
 
 interface FoodItem {
@@ -24,14 +25,15 @@ interface FoodItem {
 
 
 const MarketPlaceScreen = () => {
-   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
-   const [loading, setLoading] = useState(true);
-   const [modalVisible, setModalVisible] = useState(false);
-   const [foodNameFilter, setFoodNameFilter] = useState("");
-   const [categoryFilter, setCategoryFilter] = useState("");
-   const [pickupLocationFilter, setPickupLocationFilter] = useState("");
-   const [pickupTimeFilter, setPickupTimeFilter] = useState("");
-   const [isFiltering, setIsFiltering] = useState(false);
+    const router = useRouter();
+    const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [foodNameFilter, setFoodNameFilter] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
+    const [pickupLocationFilter, setPickupLocationFilter] = useState("");
+    const [pickupTimeFilter, setPickupTimeFilter] = useState("");
+    const [isFiltering, setIsFiltering] = useState(false);
 
 
 
@@ -86,6 +88,8 @@ const MarketPlaceScreen = () => {
         }
     };
 
+
+
 const renderItem = ({ item }: { item: FoodItem }) => {
     const statusStyle = getStatusStyle(item.status);
 
@@ -105,6 +109,16 @@ const renderItem = ({ item }: { item: FoodItem }) => {
             console.error("Failed to reserve food:", error);
             alert("Failed to reserve food. Please try again.");
         }
+    };
+    
+    const handleReport = () => {
+        router.push({
+            pathname: "../screens/ReportScreen",
+            params: { 
+                foodId: item.id, 
+                foodName: item.foodName 
+            }
+        });
     };
 
     // Determine if the button should be disabled
@@ -133,6 +147,12 @@ const renderItem = ({ item }: { item: FoodItem }) => {
                     disabled={isReserved} // Disable the button if the item is reserved
                     color={isReserved ? "gray" : "blue"} // Change the button color if disabled
                 />
+                 <TouchableOpacity 
+                    style={styles.reportButton}
+                    onPress={handleReport}
+                >
+                    <Text style={styles.reportButtonText}>Report</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -264,6 +284,22 @@ justifyContent: "center",
 alignItems: "center",
 backgroundColor: "rgba(0, 0, 0, 0.5)",
 padding: 20,
+},
+buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 10,
+},
+reportButton: {
+    backgroundColor: "#d32f2f",
+    paddingVertical: 7,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+},
+reportButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
 },
 input: {
 backgroundColor: "#fff",

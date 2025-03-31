@@ -8,6 +8,8 @@ from pydantic import BaseModel
 from typing import Optional
 from fastapi import Body
 load_dotenv()
+from datetime import datetime
+from typing import List, Optional
 
 app = FastAPI()
 
@@ -25,6 +27,25 @@ food_collection = db.food_posts
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+try:
+    # Test the MongoDB connection
+    db_info = client.server_info()
+    print(f"Successfully connected to MongoDB: {db_info['version']}")
+    
+    # Verify collections
+    collections = db.list_collection_names()
+    print(f"Available collections: {collections}")
+    
+    # Ensure the reports collection exists
+    if "reports" not in collections:
+        db.create_collection("reports")
+        print("Created 'reports' collection")
+    
+    print(f"Using food_collection: {food_collection.name}")
+    print(f"Using report_collection: {report_collection.name}")
+except Exception as e:
+    print(f"MongoDB connection error: {str(e)}")
 
 @app.post("/api/food")
 async def post_food(
@@ -154,3 +175,125 @@ async def complete_transaction(food_id: str = Form(...), user: str = Form(...)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Create Pydantic models for the report
+class ReportBase(BaseModel):
+    postId: str  # Changed from int to str to match MongoDB ObjectId
+    message: str
+    createdId: int
+    isSubmitted: bool = True
+
+class ReportCreate(ReportBase):
+    pass
+
+class Report(ReportBase):
+    id: Optional[str] = None  # MongoDB _id as string
+    submittedAt: datetime
+    reviewStatus: str = "pending"
+    reviewedBy: Optional[str] = None
+    
+    class Config:
+        orm_mode = True
+        # Allow extra fields from MongoDB
+        extra = "allow"
+
+# Create a new collection for reports
+report_collection = db.reports
+
+# Add a new endpoint for submitting a report
+@app.post("/api/report")
+async def submit_report(postId: str = Form(...), message: str = Form(...), userId: int = Form(...)):
+    try:
+        # Print debugging information
+        print(f"Received report: postId={postId}, message={message}, userId={userId}")
+        
+        # Check if the food post exists
+        try:
+            food_post = food_collection.find_one({"_id": ObjectId(postId)})
+            if not food_post:
+                raise HTTPException(status_code=404, detail="Food post not found")
+        except Exception as e:
+            print(f"Error finding food post: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Invalid post ID format: {str(e)}")
+        
+        # Create the report
+        report_data = {
+            "postId": postId,
+            "message": message,
+            "createdId": userId,
+            "isSubmitted": True,
+            "submittedAt": datetime.now(),
+            "reviewStatus": "pending",
+            "reviewedBy": None
+        }
+        
+        # Insert the report into the database
+        print("Inserting report into database:", report_data)
+        result = report_collection.insert_one(report_data)
+        print(f"Report inserted with ID: {result.inserted_id}")
+        
+        # Increment the report count on the food post
+        update_result = food_collection.update_one(
+            {"_id": ObjectId(postId)},
+            {"$inc": {"reportCount": 1}}
+        )
+        print(f"Updated food post report count: {update_result.modified_count} document(s) modified")
+        
+        return {"message": "Report submitted successfully", "report_id": str(result.inserted_id)}
+    
+    except Exception as e:
+        print(f"Error in submit_report: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Add an endpoint for admins to get all reports
+@app.get("/api/reports", response_model=List[Report])
+async def get_reports():
+    try:
+        reports = list(report_collection.find())
+        return reports
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Add an endpoint for admins to update report status
+@app.put("/api/report/{report_id}")
+async def update_report_status(report_id: str, status: str = Form(...), admin_id: str = Form(...)):
+    try:
+        report_collection.update_one(
+            {"_id": report_id},
+            {"$set": {"reviewStatus": status, "reviewedBy": admin_id}}
+        )
+        return {"message": "Report status updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/test-report")
+async def test_report():
+    try:
+        # Create a test report
+        test_report = {
+            "postId": "test_post_id",
+            "message": "This is a test report",
+            "createdId": 999,
+            "isSubmitted": True,
+            "submittedAt": datetime.now(),
+            "reviewStatus": "pending",
+            "reviewedBy": None
+        }
+        
+        # Insert the test report
+        result = report_collection.insert_one(test_report)
+        
+        # Verify it was inserted
+        inserted_report = report_collection.find_one({"_id": result.inserted_id})
+        
+        return {
+            "success": True,
+            "report_id": str(result.inserted_id),
+            "inserted_report": {
+                **{k: v for k, v in inserted_report.items() if k != "_id"},
+                "id": str(inserted_report["_id"])
+            }
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
