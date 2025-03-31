@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import Optional
-
+from fastapi import Body
 load_dotenv()
 
 app = FastAPI()
@@ -91,10 +91,21 @@ async def get_food():
         return {"food_posts": food_posts}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    
+    
+from fastapi import Body
 
 @app.post("/api/food/reserve")
-async def reserve_food(food_id: str = Form(...), user: str = Form(...)):
+async def reserve_food(payload: dict = Body(...)):
     try:
+        # Extract food_id and user from the JSON payload
+        food_id = payload.get("food_id")
+        user = payload.get("user")
+
+        if not food_id or not user:
+            raise HTTPException(status_code=400, detail="food_id and user are required")
+
         # Check if the food item exists
         food_item = food_collection.find_one({"_id": ObjectId(food_id)})
         if not food_item:

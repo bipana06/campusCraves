@@ -43,6 +43,27 @@ export const getFoodItems = async () => {
     }
 };
 
+export const reserveFood = async (foodId, user) => {
+    try {
+        const response = await axios.post(
+            `${API_URL}/reserve`, // Ensure the correct endpoint is used
+            {
+                food_id: foodId,
+                user: user,
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json", // Explicitly set the content type to JSON
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error reserving food:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
 export default{
     postFood,
     getFoodItems
