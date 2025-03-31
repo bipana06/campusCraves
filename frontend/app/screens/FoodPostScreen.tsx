@@ -10,6 +10,7 @@ const FoodPostScreen = () => {
     const [dietaryInfo, setDietaryInfo] = useState("");
     const [pickupLocation, setPickupLocation] = useState("");
     const [pickupTime, setPickupTime] = useState("");
+    const [expirationTime, setExpirationTime] = useState("");
     const [photo, setPhoto] = useState<{ uri: string; type?: string; name?: string } | null>(null);
 
     const pickImage = () => {
@@ -50,6 +51,7 @@ const FoodPostScreen = () => {
             pickupTime,
             photo: photo,  // Pass the entire photo object
             user: "Fittu", // Replace with actual user ID
+            expirationTime,
         };
 
         try {
@@ -79,6 +81,9 @@ const FoodPostScreen = () => {
 
             <Text>Pickup Time</Text>
             <TextInput value={pickupTime} onChangeText={setPickupTime} style={styles.input} />
+
+            <Text>Expiration Time</Text>
+            <TextInput value={expirationTime} onChangeText={setExpirationTime} style={styles.input} />
 
             <Button title="Pick an Image" onPress={pickImage} />
             {photo && <Image source={{ uri: photo.uri }} style={styles.image} />}

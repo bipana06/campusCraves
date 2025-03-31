@@ -10,6 +10,7 @@ export const postFood = async (foodData) => {
         formData.append("dietaryInfo", foodData.dietaryInfo || "");
         formData.append("pickupLocation", foodData.pickupLocation);
         formData.append("pickupTime", foodData.pickupTime);
+        formData.append("expirationTime", foodData.expirationTime);
 
         // Serialize the photo object as a JSON string
         if (foodData.photo) {
