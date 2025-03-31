@@ -1,8 +1,10 @@
 
 
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, Button } from "react-native";
-import { getFoodItems, reserveFood } from "../apiService";
+import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, Button, TextInput,
+    Modal,
+    TouchableOpacity,} from "react-native";
+import { getFoodItems, reserveFood, searchFoodItems } from "../apiService";
 
 
 interface FoodItem {
@@ -24,6 +26,13 @@ interface FoodItem {
 const MarketPlaceScreen = () => {
    const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
    const [loading, setLoading] = useState(true);
+   const [modalVisible, setModalVisible] = useState(false);
+   const [foodNameFilter, setFoodNameFilter] = useState("");
+   const [categoryFilter, setCategoryFilter] = useState("");
+   const [pickupLocationFilter, setPickupLocationFilter] = useState("");
+   const [pickupTimeFilter, setPickupTimeFilter] = useState("");
+   const [isFiltering, setIsFiltering] = useState(false);
+
 
 
    useEffect(() => {
@@ -59,6 +68,23 @@ const MarketPlaceScreen = () => {
                return { text: "Unknown", color: "gray" };
        }
    };
+    const applyFilters = async () => {
+        setIsFiltering(true);
+        try {
+            const filteredItems = await searchFoodItems({
+                foodName: foodNameFilter,
+                category: categoryFilter,
+                pickupLocation: pickupLocationFilter,
+                pickupTime: pickupTimeFilter
+            });
+            setFoodItems(filteredItems);
+        } catch (error) {
+            console.error("Failed to fetch filtered food items:", error);
+        } finally {
+            setModalVisible(false);
+            setIsFiltering(false);
+        }
+    };
 
 const renderItem = ({ item }: { item: FoodItem }) => {
     const statusStyle = getStatusStyle(item.status);
@@ -119,71 +145,133 @@ const renderItem = ({ item }: { item: FoodItem }) => {
 
 
    return (
-       <View style={styles.container}>
-           <Text style={styles.title}>Marketplace</Text>
-           <FlatList
-               data={foodItems}
-               keyExtractor={(item, index) => index.toString()}
-               renderItem={renderItem}
-           />
-       </View>
-   );
+    <View style={styles.container}>
+    <Text style={styles.title}>Marketplace</Text>
+
+    {/* Search Button */}
+    <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.searchButton}>
+        <Text style={styles.searchButtonText}>Search</Text>
+    </TouchableOpacity>
+
+    {/* Modal for filters */}
+    <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+    >
+        <View style={styles.modalView}>
+            <TextInput
+                placeholder="Food Name"
+                style={styles.input}
+                value={foodNameFilter}
+                onChangeText={setFoodNameFilter}
+            />
+            <TextInput
+                placeholder="Category"
+                style={styles.input}
+                value={categoryFilter}
+                onChangeText={setCategoryFilter}
+            />
+            <TextInput
+                placeholder="Pickup Location"
+                style={styles.input}
+                value={pickupLocationFilter}
+                onChangeText={setPickupLocationFilter}
+            />
+            <TextInput
+                placeholder="Pickup Time"
+                style={styles.input}
+                value={pickupTimeFilter}
+                onChangeText={setPickupTimeFilter}
+            />
+            <Button title="Apply Filters" onPress={applyFilters} disabled={isFiltering} />
+            <Button title="Close" onPress={() => setModalVisible(false)} />
+        </View>
+    </Modal>
+
+    <FlatList
+        data={foodItems}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderItem}
+    />
+</View>
+);
 };
 
-
 const styles = StyleSheet.create({
-   container: {
-       flex: 1,
-       backgroundColor: "#fff",
-       padding: 20,
-   },
-   loader: {
-       flex: 1,
-       justifyContent: "center",
-       alignItems: "center",
-   },
-   title: {
-       fontSize: 24,
-       fontWeight: "bold",
-       marginBottom: 10,
-       textAlign: "center",
-   },
-   card: {
-       flexDirection: "row",
-       backgroundColor: "#f9f9f9",
-       borderRadius: 10,
-       padding: 15,
-       marginBottom: 10,
-       alignItems: "center",
-       shadowColor: "#000",
-       shadowOffset: { width: 0, height: 2 },
-       shadowOpacity: 0.1,
-       shadowRadius: 5,
-       elevation: 2,
-   },
-   image: {
-       width: 80,
-       height: 80,
-       borderRadius: 10,
-       marginRight: 15,
-   },
-   textContainer: {
-       flex: 1,
-   },
-   foodName: {
-       fontSize: 18,
-       fontWeight: "bold",
-       marginBottom: 5,
-   },
-   detail: {
-       fontSize: 14,
-       color: "#555",
-   },
+container: {
+flex: 1,
+backgroundColor: "#fff",
+padding: 20,
+},
+loader: {
+flex: 1,
+justifyContent: "center",
+alignItems: "center",
+},
+title: {
+fontSize: 24,
+fontWeight: "bold",
+marginBottom: 10,
+textAlign: "center",
+},
+card: {
+flexDirection: "row",
+backgroundColor: "#f9f9f9",
+borderRadius: 10,
+padding: 15,
+marginBottom: 10,
+alignItems: "center",
+shadowColor: "#000",
+shadowOffset: { width: 0, height: 2 },
+shadowOpacity: 0.1,
+shadowRadius: 5,
+elevation: 2,
+},
+image: {
+width: 80,
+height: 80,
+borderRadius: 10,
+marginRight: 15,
+},
+textContainer: {
+flex: 1,
+},
+foodName: {
+fontSize: 18,
+fontWeight: "bold",
+marginBottom: 5,
+},
+detail: {
+fontSize: 14,
+color: "#555",
+},
+searchButton: {
+backgroundColor: "#007BFF",
+padding: 10,
+borderRadius: 5,
+marginBottom: 10,
+},
+searchButtonText: {
+color: "#fff",
+textAlign: "center",
+fontWeight: "bold",
+},
+modalView: {
+flex: 1,
+justifyContent: "center",
+alignItems: "center",
+backgroundColor: "rgba(0, 0, 0, 0.5)",
+padding: 20,
+},
+input: {
+backgroundColor: "#fff",
+padding: 10,
+marginBottom: 10,
+borderRadius: 5,
+width: "80%",
+},
 });
 
-
 export default MarketPlaceScreen;
-
-
-
-
