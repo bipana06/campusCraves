@@ -10,7 +10,7 @@ const FoodPostScreen = () => {
     const [dietaryInfo, setDietaryInfo] = useState("");
     const [pickupLocation, setPickupLocation] = useState("");
     const [pickupTime, setPickupTime] = useState("");
-    const [photo, setPhoto] = useState<{ uri: string } | null>(null);
+    const [photo, setPhoto] = useState<{ uri: string; type?: string; name?: string } | null>(null);
 
     const pickImage = () => {
         ImagePicker.launchImageLibrary({ mediaType: "photo" }, (response) => {
@@ -20,8 +20,13 @@ const FoodPostScreen = () => {
                 console.log("ImagePicker Error: ", response.errorCode, response.errorMessage);
             } else {
                 if (response.assets && response.assets.length > 0) {
-                    if (response.assets[0].uri) {
-                        setPhoto({ uri: response.assets[0].uri });  // Ensure uri is defined
+                    const selectedPhoto = response.assets[0];
+                    if (selectedPhoto.uri) {
+                        setPhoto({
+                            uri: selectedPhoto.uri, // File URI
+                            type: selectedPhoto.type || "image/jpeg", // MIME type (default to image/jpeg)
+                            name: selectedPhoto.fileName || selectedPhoto.uri.split("/").pop(), // File name
+                        });
                     } else {
                         console.log("Image asset does not have a valid URI");
                     }
@@ -44,6 +49,7 @@ const FoodPostScreen = () => {
             pickupLocation,
             pickupTime,
             photo: photo,  // Pass the entire photo object
+            user: "Fittu", // Replace with actual user ID
         };
 
         try {
