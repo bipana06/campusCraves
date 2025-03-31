@@ -32,11 +32,15 @@ const ReportScreen = () => {
       // In a real app, you would get the actual user ID from authentication
       const userId = 1; // Placeholder user ID
       
+      console.log(`Submitting report for food item: ${foodId} - ${foodName}`);
+      
       const response = await submitReport(
-        Number(foodId), 
+        foodId, // This should be the string ID from MongoDB
         reportMessage, 
         userId
       );
+      
+      console.log("Report submission successful:", response);
       
       Alert.alert(
         "Report Submitted", 
@@ -45,7 +49,10 @@ const ReportScreen = () => {
       );
     } catch (error) {
       console.error("Failed to submit report:", error);
-      Alert.alert("Error", "Failed to submit report. Please try again later.");
+      Alert.alert(
+        "Error", 
+        `Failed to submit report: ${(error as any).response?.data?.detail || "Please try again later."}`
+      );
     } finally {
       setIsSubmitting(false);
     }
