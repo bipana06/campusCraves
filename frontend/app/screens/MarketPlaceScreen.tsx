@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, Button } from "react-native";
-import { getFoodItems } from "../apiService";
+import { getFoodItems, reserveFood } from "../apiService";
 
 
 interface FoodItem {
@@ -59,29 +59,58 @@ const MarketPlaceScreen = () => {
                return { text: "Unknown", color: "gray" };
        }
    };
-   const renderItem = ({ item }: { item: FoodItem }) => {
-       const statusStyle = getStatusStyle(item.status);
-       return (
-           <View style={styles.card}>
-               <Image source={{ uri: item.photo }} style={styles.image} />
-              
-               <View style={styles.textContainer}>
-                   {/* <Text style={styles.detail}>{item.id}</Text> */}
-                   <Text style={styles.foodName}>{item.foodName}</Text>
-                   <Text style={styles.detail}>Quantity: {item.quantity}</Text>
-                   <Text style={styles.detail}>Category: {item.category}</Text>
-                   <Text style={styles.detail}>Pickup: {item.pickupLocation}</Text>
-                   <Text style={styles.detail}>Time: {item.pickupTime}</Text>
-                   <Text style={[styles.detail, { color: statusStyle.color, fontWeight: "bold" }]}>Status: {statusStyle.text}</Text>
-                   <Text style={styles.detail}>Posted By: {item.postedBy}</Text>
+
+const renderItem = ({ item }: { item: FoodItem }) => {
+    const statusStyle = getStatusStyle(item.status);
+
+    const handleReserve = async () => {
+        try {
+            const user = "currentUser"; // Replace with the actual logged-in user's identifier
+            const response = await reserveFood(item.id, user);
+            console.log("Reservation successful:", response);
+
+            // Update the UI to reflect the new status
+            setFoodItems((prevItems) =>
+                prevItems.map((food) =>
+                    food.id === item.id ? { ...food, status: "yellow", reservedBy: user } : food
+                )
+            );
+        } catch (error) {
+            console.error("Failed to reserve food:", error);
+            alert("Failed to reserve food. Please try again.");
+        }
+    };
+
+    // Determine if the button should be disabled
+    const isReserved = item.status === "yellow" || item.status === "red";
+
+    return (
+        <View style={styles.card}>
+            <Image source={{ uri: item.photo }} style={styles.image} />
+
+            <View style={styles.textContainer}>
+                <Text style={styles.foodName}>{item.foodName}</Text>
+                <Text style={styles.detail}>Quantity: {item.quantity}</Text>
+                <Text style={styles.detail}>Category: {item.category}</Text>
+                <Text style={styles.detail}>Pickup: {item.pickupLocation}</Text>
+                <Text style={styles.detail}>Time: {item.pickupTime}</Text>
+                <Text style={[styles.detail, { color: statusStyle.color, fontWeight: "bold" }]}>
+                    Status: {statusStyle.text}
+                </Text>
+                <Text style={styles.detail}>Posted By: {item.postedBy}</Text>
                    <Text style={styles.detail}>Report Count: {item.reportCount}</Text>
                    <Text style={styles.detail}>Created At: {new Date(item.createdAt).toLocaleString()}</Text>
                    <Text style={styles.detail}>Expiration Time: {item.expirationTime}</Text>
-                    <Button title="Reserve" onPress={() => console.log("Reserve clicked")} />
-               </View>
-           </View>
-       );
-   };
+                <Button
+                    title={isReserved ? "Reserved" : "Reserve"}
+                    onPress={handleReserve}
+                    disabled={isReserved} // Disable the button if the item is reserved
+                    color={isReserved ? "gray" : "blue"} // Change the button color if disabled
+                />
+            </View>
+        </View>
+    );
+};
 
 
    if (loading) {
