@@ -43,7 +43,19 @@ export const getFoodItems = async () => {
     }
 };
 
+// get the foods according to filters
+export const searchFoodItems = async (filters) => {
+    try {
+        const response = await axios.get(`${API_URL}/search`, { params: filters });
+        return response.data.food_posts; 
+    } catch (error) {
+        console.error("Error fetching filtered food items:", error);
+        throw error;
+    }
+};
+
 export default{
     postFood,
-    getFoodItems
+    getFoodItems,
+    searchFoodItems
 }
