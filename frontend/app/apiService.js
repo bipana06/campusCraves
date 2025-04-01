@@ -1,6 +1,8 @@
 import axios from "axios";
 
 const API_URL = "http://127.0.0.1:8000/api/food"; 
+const USER_API_URL = "http://127.0.0.1:8000/api/users";
+
 export const postFood = async (foodData) => {
     try {
         const formData = new FormData();
@@ -73,12 +75,48 @@ export const searchFoodItems = async (filters) => {
         throw error;
     }
  };
+
+// New user-related functions
+export const registerUser = async (userData) => {
+    try {
+        console.log("Registering user:", userData);
+        
+        // The backend expects a JSON body for user registration
+        const response = await axios.post(`${USER_API_URL}/register`, userData, {
+            headers: { "Content-Type": "application/json" },
+        });
+        
+        console.log("User registration response:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error registering user:", error);
+        throw error;
+    }
+};
+
+export const getUser = async (googleId) => {
+    try {
+        if (!googleId) {
+            throw new Error("Google ID is required to fetch user data");
+        }
+        
+        console.log("Fetching user with Google ID:", googleId);
+        const response = await axios.get(`${USER_API_URL}/${googleId}`);
+        console.log("User data retrieved:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        throw error;
+    }
+};
  
  
  export default{
     postFood,
     getFoodItems,
-    searchFoodItems
+    searchFoodItems,
+    registerUser,
+    getUser
  }
  
 
