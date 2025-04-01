@@ -40,6 +40,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="netid"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+          // If you want to hide this tab from the bar but keep it accessible
+          tabBarButton: () => null, 
+        }}
+      />
     </Tabs>
   );
 }
