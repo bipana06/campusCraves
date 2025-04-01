@@ -297,3 +297,26 @@ async def test_report():
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
+@app.get("/api/food/search")
+async def search_food(
+   foodName: Optional[str] = None,
+   category: Optional[str] = None,
+   pickupLocation: Optional[str] = None,
+   pickupTime: Optional[str] = None,
+):
+   try:
+       query = {}
+       if foodName:
+           query["foodName"] = {"$regex": foodName, "$options": "i"}
+       if category:
+           query["category"] = {"$regex": category, "$options": "i"}
+       if pickupLocation:
+           query["pickupLocation"] = {"$regex": pickupLocation, "$options": "i"}
+       if pickupTime:
+           query["pickupTime"] = {"$regex": pickupTime, "$options": "i"}
+
+
+       food_posts = list(food_collection.find(query, {"_id": 0}))
+       return {"food_posts": food_posts}
+   except Exception as e:
+       raise HTTPException(status_code=500, detail=str(e))

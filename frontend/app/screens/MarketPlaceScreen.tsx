@@ -293,6 +293,7 @@ buttonRow: {
 },
 reportButton: {
     backgroundColor: "#d32f2f",
+    alignItems: "center",
     paddingVertical: 7,
     paddingHorizontal: 15,
     borderRadius: 5,
