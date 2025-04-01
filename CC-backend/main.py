@@ -401,3 +401,55 @@ async def get_user(googleId: str):
         raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/users/profile/{net_id}")
+async def get_user_profile(net_id: str):
+    try:
+        print(f"Fetching profile for netId: {net_id}")  # Debug log
+
+        # Fetch the user details using netId
+        user = users_collection.find_one({"netId": net_id})
+        if not user:
+            print(f"User with netId {net_id} not found")  # Debug log
+            raise HTTPException(status_code=404, detail="User not found")
+
+        print(f"User details: {user}")  # Debug log
+
+        # Count the number of posts made by the user
+        post_count = food_collection.count_documents({"postedBy": net_id})
+        print(f"Post count for user {net_id}: {post_count}")  # Debug log
+
+        # Count the number of food items received by the user
+        received_count = food_collection.count_documents({"reservedBy": net_id})
+        print(f"Received count for user {net_id}: {received_count}")  # Debug log
+
+        # Fetch the user's post history
+        post_history = list(food_collection.find({"postedBy": net_id}))
+        for post in post_history:
+            post["id"] = str(post["_id"])
+            del post["_id"]
+        print(f"Post history for user {net_id}: {post_history}")  # Debug log
+
+        # Fetch the user's received food history
+        received_history = list(food_collection.find({"reservedBy": net_id}))
+        for received in received_history:
+            received["id"] = str(received["_id"])
+            del received["_id"]
+        print(f"Received history for user {net_id}: {received_history}")  # Debug log
+
+        # Prepare the response
+        response = {
+            "username": user.get("fullName", "Unknown"),
+            "email": user.get("email", "Unknown"),
+            "profilePicture": user.get("picture", ""),
+            "post_count": post_count,
+            "received_count": received_count,
+            "post_history": post_history,
+            "received_history": received_history,
+        }
+        print(f"Response for user {net_id}: {response}")  # Debug log
+        return response
+
+    except Exception as e:
+        print(f"Error fetching profile for netId {net_id}: {str(e)}")  # Debug log
+        raise HTTPException(status_code=500, detail=str(e))

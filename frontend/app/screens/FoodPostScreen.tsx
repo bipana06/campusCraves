@@ -53,7 +53,7 @@ const FoodPostScreen = () => {
             pickupTime: pickupTime.toISOString(),
             expirationTime: expirationTime ? expirationTime.toISOString() : null,
             photo: photo,
-            user: "Fittu",
+            user: "xy1234",
             createdAt: new Date().toISOString(),
         };
 
