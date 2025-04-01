@@ -316,3 +316,79 @@ async def search_food(
        return {"food_posts": food_posts}
    except Exception as e:
        raise HTTPException(status_code=500, detail=str(e))
+# User model for registration
+class UserRegistration(BaseModel):
+    googleId: str
+    email: str
+    netId: str
+    fullName: str
+    phoneNumber: Optional[str] = None
+    picture: Optional[str] = None
+
+# Create a users collection
+users_collection = db.users  # Add this near your food_collection definition
+
+# Add user registration endpoint
+@app.post("/api/users/register")
+async def register_user(user: UserRegistration):
+    try:
+        # Check if user with this googleId exists
+        existing_user = users_collection.find_one({"googleId": user.googleId})
+        
+        if existing_user:
+            # Update existing user
+            users_collection.update_one(
+                {"googleId": user.googleId},
+                {"$set": {
+                    "netId": user.netId,
+                    "fullName": user.fullName,
+                    "phoneNumber": user.phoneNumber,
+                    "picture": user.picture,
+                    "updatedAt": datetime.now()
+                }}
+            )
+            return {"success": True, "message": "User updated successfully"}
+        
+        # Check if user with this netId exists
+        netid_exists = users_collection.find_one({"netId": user.netId})
+        if netid_exists:
+            raise HTTPException(status_code=409, detail="This Net ID is already registered")
+        
+        # Create new user
+        user_data = user.dict()
+        user_data["createdAt"] = datetime.now()
+        user_data["role"] = "user"  # Default role
+        user_data["postCount"] = 0
+        user_data["reservationCount"] = 0
+        
+        result = users_collection.insert_one(user_data)
+        
+        if result.inserted_id:
+            return {
+                "success": True,
+                "message": "User registered successfully"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to register user")
+            
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Get user by googleId
+@app.get("/api/users/{googleId}")
+async def get_user(googleId: str):
+    try:
+        user = users_collection.find_one({"googleId": googleId})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Convert ObjectId to string for JSON serialization
+        user["_id"] = str(user["_id"])
+        
+        return user
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
