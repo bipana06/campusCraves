@@ -293,29 +293,36 @@ async def test_report():
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 @app.get("/api/food/search")
 async def search_food(
-   foodName: Optional[str] = None,
-   category: Optional[str] = None,
-   pickupLocation: Optional[str] = None,
-   pickupTime: Optional[str] = None,
+  foodName: Optional[str] = None,
+  category: Optional[str] = None,
+  pickupLocation: Optional[str] = None,
+  pickupTime: Optional[str] = None,
 ):
-   try:
-       query = {}
-       if foodName:
-           query["foodName"] = {"$regex": foodName, "$options": "i"}
-       if category:
-           query["category"] = {"$regex": category, "$options": "i"}
-       if pickupLocation:
-           query["pickupLocation"] = {"$regex": pickupLocation, "$options": "i"}
-       if pickupTime:
-           query["pickupTime"] = {"$regex": pickupTime, "$options": "i"}
+  try:
+      query = {}
+      if foodName:
+          query["foodName"] = {"$regex": foodName, "$options": "i"}
+      if category:
+          query["category"] = {"$regex": category, "$options": "i"}
+      if pickupLocation:
+          query["pickupLocation"] = {"$regex": pickupLocation, "$options": "i"}
+      if pickupTime:
+          query["pickupTime"] = {"$regex": pickupTime, "$options": "i"}
 
+      # Fetch food posts and include the _id field
+      food_posts = list(food_collection.find(query))
 
-       food_posts = list(food_collection.find(query, {"_id": 0}))
-       return {"food_posts": food_posts}
-   except Exception as e:
-       raise HTTPException(status_code=500, detail=str(e))
+      # Convert _id to string and rename it to id
+      for food in food_posts:
+          food["id"] = str(food["_id"])  # Add an "id" field with the string version of "_id"
+          del food["_id"]  # Remove the original "_id" field
+
+      return {"food_posts": food_posts}
+  except Exception as e:
+      raise HTTPException(status_code=500, detail=str(e))
 # User model for registration
 class UserRegistration(BaseModel):
     googleId: str
