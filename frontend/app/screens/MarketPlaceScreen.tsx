@@ -38,19 +38,19 @@ const MarketPlaceScreen = () => {
 
 
    useEffect(() => {
-       const fetchFoodItems = async () => {
-           try {
-               const data = await getFoodItems();
-               setFoodItems(data);
-           } catch (error) {
-               console.error("Failed to fetch food items:", error);
-           } finally {
-               setLoading(false);
-           }
-       };
+    const fetchFoodItems = async () => {
+        try {
+            const data = await getFoodItems();
+            const filteredData = filterExpiredItems(data); // Remove expired items
+            setFoodItems(filteredData);
+        } catch (error) {
+            console.error("Failed to fetch food items:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-
-       fetchFoodItems();
+    fetchFoodItems();
    }, []);
 
 
@@ -77,9 +77,10 @@ const MarketPlaceScreen = () => {
                 foodName: foodNameFilter,
                 category: categoryFilter,
                 pickupLocation: pickupLocationFilter,
-                pickupTime: pickupTimeFilter
+                pickupTime: pickupTimeFilter,
             });
-            setFoodItems(filteredItems);
+            const nonExpiredItems = filterExpiredItems(filteredItems); // Remove expired items
+            setFoodItems(nonExpiredItems);
         } catch (error) {
             console.error("Failed to fetch filtered food items:", error);
         } finally {
@@ -88,8 +89,26 @@ const MarketPlaceScreen = () => {
         }
     };
 
-
-
+    const formatDateTime = (dateString: string): string => {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            // If the date is invalid, use the current system time
+            return new Intl.DateTimeFormat("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            }).format(new Date());
+        }
+        return new Intl.DateTimeFormat("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        }).format(date);
+    };
 const renderItem = ({ item }: { item: FoodItem }) => {
     const statusStyle = getStatusStyle(item.status);
 
@@ -132,15 +151,15 @@ const renderItem = ({ item }: { item: FoodItem }) => {
                 <Text style={styles.foodName}>{item.foodName}</Text>
                 <Text style={styles.detail}>Quantity: {item.quantity}</Text>
                 <Text style={styles.detail}>Category: {item.category}</Text>
-                <Text style={styles.detail}>Pickup: {item.pickupLocation}</Text>
-                <Text style={styles.detail}>Time: {item.pickupTime}</Text>
+                <Text style={styles.detail}>Pickup Location: {item.pickupLocation}</Text>
+                <Text style={styles.detail}>Pickup Time: {formatDateTime(item.pickupTime)}</Text>
                 <Text style={[styles.detail, { color: statusStyle.color, fontWeight: "bold" }]}>
                     Status: {statusStyle.text}
                 </Text>
                 <Text style={styles.detail}>Posted By: {item.postedBy}</Text>
                    <Text style={styles.detail}>Report Count: {item.reportCount}</Text>
-                   <Text style={styles.detail}>Created At: {new Date(item.createdAt).toLocaleString()}</Text>
-                   <Text style={styles.detail}>Expiration Time: {item.expirationTime}</Text>
+                   <Text style={styles.detail}>Created At: {formatDateTime(item.createdAt)}</Text>
+                   <Text style={styles.detail}>Expiration Time: {formatDateTime(item.expirationTime)}</Text>
                 <Button
                     title={isReserved ? "Reserved" : "Reserve"}
                     onPress={handleReserve}
@@ -218,6 +237,16 @@ const renderItem = ({ item }: { item: FoodItem }) => {
 </View>
 );
 };
+const filterExpiredItems = (items: FoodItem[]): FoodItem[] => {
+    const now = new Date();
+    return items.filter((item) => {
+        const expirationDate = new Date(item.expirationTime);
+        return expirationDate.getTime() > now.getTime(); // Keep items that haven't expired
+    });
+};
+
+
+
 
 const styles = StyleSheet.create({
 container: {
