@@ -20,43 +20,43 @@ const ReportScreen = () => {
   
   // Extract parameters from the route
   const { foodId, foodName } = params;
-
-  const handleSubmit = async () => {
-    if (!reportMessage.trim()) {
-      Alert.alert("Error", "Please provide a reason for your report");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      // In a real app, you would get the actual user ID from authentication
-      const userId = 1; // Placeholder user ID
-      
-      console.log(`Submitting report for food item: ${foodId} - ${foodName}`);
-      
-      const response = await submitReport(
-        foodId, // This should be the string ID from MongoDB
-        reportMessage, 
-        userId
-      );
-      
-      console.log("Report submission successful:", response);
-      
-      Alert.alert(
-        "Report Submitted", 
-        "Thank you for your report. Our team will review it shortly.",
-        [{ text: "OK", onPress: () => router.back() }]
-      );
-    } catch (error) {
-      console.error("Failed to submit report:", error);
-      Alert.alert(
-        "Error", 
-        `Failed to submit report: ${(error as any).response?.data?.detail || "Please try again later."}`
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    const handleSubmit = async () => {
+        if (!reportMessage.trim()) {
+        Alert.alert("Error", "Please provide a reason for your report");
+        return;
+        }
+    
+        setIsSubmitting(true);
+    
+        try {
+        const user1Id = 1; // Ensure userId is correctly retrieved
+        const user2Id=  2; // change wuth poster id
+        console.log("Sending report with data:", {
+            foodId,
+            reportMessage,
+            user1Id,
+        });
+    
+        const response = await submitReport(foodId, reportMessage, user1Id, user2Id);
+        
+        console.log("Report submission response:", response);
+    
+        Alert.alert(
+            "Report Submitted",
+            "Thank you for your report. Our team will review it shortly.",
+            [{ text: "OK", onPress: () => router.back() }]
+        );
+        } catch (error) {
+        console.error("Failed to submit report:", error);
+        Alert.alert(
+            "Error",
+            `Failed to submit report: ${error.message || "Please try again later."}`
+        );
+        } finally {
+        setIsSubmitting(false);
+        }
+    };
+  
 
   return (
     <ScrollView style={styles.container}>
