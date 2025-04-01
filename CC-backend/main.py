@@ -58,6 +58,7 @@ async def post_food(
     photo: str = Form(...),
     user: str = Form(...),
     expirationTime: str = Form(...),
+    createdAt: str = Form(...),
    
 ):
     try:
@@ -80,6 +81,7 @@ async def post_food(
             "timestamp": db.command("serverStatus")["localTime"],
             "reservedBy": "None",
             "expirationTime": expirationTime,
+            "createdAt": createdAt,
         }
 
         result = food_collection.insert_one(food_data)

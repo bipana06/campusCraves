@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Image, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, Button, Image, Alert, StyleSheet, TouchableOpacity } from "react-native";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css"; // Required for Web
 import * as ImagePicker from "react-native-image-picker";
 import { postFood } from "../apiService";
 
@@ -9,8 +11,8 @@ const FoodPostScreen = () => {
     const [category, setCategory] = useState("");
     const [dietaryInfo, setDietaryInfo] = useState("");
     const [pickupLocation, setPickupLocation] = useState("");
-    const [pickupTime, setPickupTime] = useState("");
-    const [expirationTime, setExpirationTime] = useState("");
+    const [pickupTime, setPickupTime] = useState<Date | null>(null);
+    const [expirationTime, setExpirationTime] = useState<Date | null>(null);
     const [photo, setPhoto] = useState<{ uri: string; type?: string; name?: string } | null>(null);
 
     const pickImage = () => {
@@ -24,9 +26,9 @@ const FoodPostScreen = () => {
                     const selectedPhoto = response.assets[0];
                     if (selectedPhoto.uri) {
                         setPhoto({
-                            uri: selectedPhoto.uri, // File URI
-                            type: selectedPhoto.type || "image/jpeg", // MIME type (default to image/jpeg)
-                            name: selectedPhoto.fileName || selectedPhoto.uri.split("/").pop(), // File name
+                            uri: selectedPhoto.uri,
+                            type: selectedPhoto.type || "image/jpeg",
+                            name: selectedPhoto.fileName || selectedPhoto.uri.split("/").pop(),
                         });
                     } else {
                         console.log("Image asset does not have a valid URI");
@@ -48,10 +50,11 @@ const FoodPostScreen = () => {
             category,
             dietaryInfo,
             pickupLocation,
-            pickupTime,
-            photo: photo,  // Pass the entire photo object
-            user: "Fittu", // Replace with actual user ID
-            expirationTime,
+            pickupTime: pickupTime.toISOString(),
+            expirationTime: expirationTime ? expirationTime.toISOString() : null,
+            photo: photo,
+            user: "Fittu",
+            createdAt: new Date().toISOString(),
         };
 
         try {
@@ -79,11 +82,31 @@ const FoodPostScreen = () => {
             <Text>Pickup Location</Text>
             <TextInput value={pickupLocation} onChangeText={setPickupLocation} style={styles.input} />
 
+            {/* Pickup Time */}
             <Text>Pickup Time</Text>
-            <TextInput value={pickupTime} onChangeText={setPickupTime} style={styles.input} />
+            <DatePicker
+                selected={pickupTime}
+                onChange={(date) => setPickupTime(date)}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={15}
+                timeCaption="Pickup Time"
+                dateFormat="hh:mm aa"
+                className="datepicker-input"
+            />
 
+            {/* Expiration Time */}
             <Text>Expiration Time</Text>
-            <TextInput value={expirationTime} onChangeText={setExpirationTime} style={styles.input} />
+            <DatePicker
+                selected={expirationTime}
+                onChange={(date) => setExpirationTime(date)}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={15}
+                timeCaption="Expiration Time"
+                dateFormat="hh:mm aa"
+                className="datepicker-input"
+            />
 
             <Button title="Pick an Image" onPress={pickImage} />
             {photo && <Image source={{ uri: photo.uri }} style={styles.image} />}
@@ -94,24 +117,24 @@ const FoodPostScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { 
-        flex: 1, 
-        padding: 20, 
-        backgroundColor: "#fff"
+    container: {
+        flex: 1,
+        padding: 20,
+        backgroundColor: "#fff",
     },
-    input: { 
-        borderWidth: 1, 
-        borderColor: "#ccc", 
-        marginBottom: 10, 
-        padding: 10, 
-        backgroundColor: "#fff", 
-        color: "#000"
+    input: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        marginBottom: 10,
+        padding: 10,
+        backgroundColor: "#fff",
+        color: "#000",
     },
-    image: { 
-        width: 100, 
-        height: 100, 
-        marginTop: 10 
-    }
+    image: {
+        width: 100,
+        height: 100,
+        marginTop: 10,
+    },
 });
 
 export default FoodPostScreen;
