@@ -7,6 +7,19 @@ import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, Button, Tex
 import { getFoodItems, reserveFood, searchFoodItems } from "../apiService";
 import { useRouter } from "expo-router";
 
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
+const Tab = createMaterialTopTabNavigator();
+
+const MarketPlaceScreen = () => {
+    return (
+        <Tab.Navigator>
+            <Tab.Screen name="Marketplace" component={MarketplaceTab} />
+            <Tab.Screen name="My Orders" component={MyOrdersTab} />
+            <Tab.Screen name="My Reservations" component={MyReservationsTab} />
+        </Tab.Navigator>
+    );
+};
 
 interface FoodItem {
    id: number;
@@ -24,7 +37,7 @@ interface FoodItem {
 }
 
 
-const MarketPlaceScreen = () => {
+const MarketplaceTab = () => {
     const router = useRouter();
     const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -185,7 +198,9 @@ const renderItem = ({ item }: { item: FoodItem }) => {
 
    return (
     <View style={styles.container}>
-    <Text style={styles.title}>Marketplace</Text>
+    <TouchableOpacity onPress={() => router.push('../screens/FoodPostScreen')} style={styles.postButton}>
+                    <Text style={styles.postButtonText}>Post Food</Text>
+                </TouchableOpacity>
 
     {/* Search Button */}
     <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.searchButton}>
@@ -246,6 +261,21 @@ const filterExpiredItems = (items: FoodItem[]): FoodItem[] => {
 };
 
 
+const MyOrdersTab = () => {
+    return (
+        <View style={styles.container}>
+            <Text>My Orders Content</Text>
+        </View>
+    );
+};
+
+const MyReservationsTab = () => {
+    return (
+        <View style={styles.container}>
+            <Text>My Reservations Content</Text>
+        </View>
+    );
+};
 
 
 const styles = StyleSheet.create({
@@ -297,10 +327,14 @@ fontSize: 14,
 color: "#555",
 },
 searchButton: {
-backgroundColor: "#007BFF",
-padding: 10,
-borderRadius: 5,
-marginBottom: 10,
+    backgroundColor: "#007bff",
+    paddingVertical: 10, // Adjust vertical padding for height
+    paddingHorizontal: 20, // Adjust horizontal padding for width
+    borderRadius: 5,
+    alignItems: "center", // Center text horizontally
+    justifyContent: "center", // Center text vertically
+    alignSelf: "center", // Center the button within its parent container
+    marginVertical: 10, // Add spacing above and below the butto
 },
 searchButtonText: {
 color: "#fff",
@@ -338,6 +372,17 @@ marginBottom: 10,
 borderRadius: 5,
 width: "80%",
 },
+postButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 10, // Adjust vertical padding for height
+    paddingHorizontal: 20, // Adjust horizontal padding for width
+    borderRadius: 5,
+    alignItems: "center", // Center text horizontally
+    justifyContent: "center", // Center text vertically
+    alignSelf: "center", // Center the button within its parent container
+    marginVertical: 10, // Add spacing above and below the button
+},
+    postButtonText: { color: "#fff", fontWeight: "bold" },
 });
 
 export default MarketPlaceScreen;

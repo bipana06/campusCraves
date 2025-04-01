@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Alert } from "react-native";
 
 const API_URL = "http://127.0.0.1:8000/api/food"; 
 const USER_API_URL = "http://127.0.0.1:8000/api/users";
@@ -28,7 +29,13 @@ export const postFood = async (foodData) => {
         const response = await axios.post("http://127.0.0.1:8000/api/food", formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
-
+        if (Platform.OS === "web") {
+            // Use browser's alert for web
+            window.alert("Success", "Food item posted successfully!");
+        } else {
+            // Use React Native's Alert for mobile
+            Alert.alert("Success", "Food item posted successfully!")
+        }
         return response.data;
     } catch (error) {
         console.error("Error posting food:", error);
