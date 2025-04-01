@@ -110,11 +110,42 @@ export const getUser = async (googleId) => {
     }
 };
  
- 
- export default{
+
+
+  
+export const submitReport = async (postId, message, user1Id, user2Id) => {
+    try {
+      const response = await fetch("http://localhost:8000/api/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded", // Ensure this matches FastAPI's expected format
+        },
+        body: new URLSearchParams({
+          postId,
+          message,
+          user1Id: user1Id.toString(),
+          user2Id: user2Id.toString(),
+        }).toString(),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error("submitReport error:", error);
+      throw error;
+    }
+  };
+  
+
+export default {
     postFood,
     getFoodItems,
     searchFoodItems,
+    reserveFood,
+    submitReport,
     registerUser,
     getUser
  }

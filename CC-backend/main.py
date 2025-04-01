@@ -27,7 +27,7 @@ food_collection = db.food_posts
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
+report_collection = db.reports  # Define before usage
 try:
     # Test the MongoDB connection
     db_info = client.server_info()
@@ -114,8 +114,6 @@ async def get_food():
         raise HTTPException(status_code=500, detail=str(e))
     
     
-    
-from fastapi import Body
 
 @app.post("/api/food/reserve")
 async def reserve_food(payload: dict = Body(...)):
@@ -201,61 +199,59 @@ class Report(ReportBase):
 # Create a new collection for reports
 report_collection = db.reports
 
-# Add a new endpoint for submitting a report
 @app.post("/api/report")
-async def submit_report(postId: str = Form(...), message: str = Form(...), userId: int = Form(...)):
+async def submit_report(postId: str = Form(...), message: str = Form(...), user1Id: int = Form(...), user2Id: int = Form(...)):
     try:
-        # Print debugging information
-        print(f"Received report: postId={postId}, message={message}, userId={userId}")
-        
-        # Check if the food post exists
-        try:
-            food_post = food_collection.find_one({"_id": ObjectId(postId)})
-            if not food_post:
-                raise HTTPException(status_code=404, detail="Food post not found")
-        except Exception as e:
-            print(f"Error finding food post: {str(e)}")
-            raise HTTPException(status_code=400, detail=f"Invalid post ID format: {str(e)}")
-        
-        # Create the report
+        print(f"Received report: postId={postId}, message={message}, user1Id={user1Id}, user2Id={user2Id}")  # Debug log
+
+        food_post = food_collection.find_one({"_id": ObjectId(postId)})
+        if not food_post:
+            print("Food post not found!")  # Debug log
+            raise HTTPException(status_code=404, detail="Food post not found")
+
         report_data = {
             "postId": postId,
+            "user1ID": user1Id,
+            "user2ID":user2Id,
             "message": message,
-            "createdId": userId,
             "isSubmitted": True,
             "submittedAt": datetime.now(),
             "reviewStatus": "pending",
-            "reviewedBy": None
+            "reviewedBy": None,
         }
-        
-        # Insert the report into the database
-        print("Inserting report into database:", report_data)
+
+        print("Inserting report into database:", report_data)  # Debug log
         result = report_collection.insert_one(report_data)
-        print(f"Report inserted with ID: {result.inserted_id}")
-        
-        # Increment the report count on the food post
+        print(f"Report inserted with ID: {result.inserted_id}")  # Debug log
+
         update_result = food_collection.update_one(
             {"_id": ObjectId(postId)},
             {"$inc": {"reportCount": 1}}
         )
-        print(f"Updated food post report count: {update_result.modified_count} document(s) modified")
-        
+        print(f"Updated food post report count: {update_result.modified_count} document(s) modified")  # Debug log
+
         return {"message": "Report submitted successfully", "report_id": str(result.inserted_id)}
-    
+
     except Exception as e:
-        print(f"Error in submit_report: {str(e)}")
+        print(f"Error in submit_report: {str(e)}")  # Debug log
         raise HTTPException(status_code=500, detail=str(e))
 
-# Add an endpoint for admins to get all reports
+
 @app.get("/api/reports", response_model=List[Report])
 async def get_reports():
     try:
         reports = list(report_collection.find())
+
+        # Convert ObjectId to string
+        for report in reports:
+            report["id"] = str(report["_id"])
+            del report["_id"]  # Remove original ObjectId to avoid serialization errors
+
         return reports
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Add an endpoint for admins to update report status
+
 @app.put("/api/report/{report_id}")
 async def update_report_status(report_id: str, status: str = Form(...), admin_id: str = Form(...)):
     try:
