@@ -11,6 +11,24 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { submitReport } from "../apiService";
+import { getGoogleId, getNetId, getPosterNetId  } from "../apiService";
+let googleId: string | null = null;
+let netId: string | null = null;
+let posterNetId: string | null = null;
+
+
+const initializeGlobalData = async () => {
+ googleId = await getGoogleId();
+ console.log("Google ID:", googleId);
+  if (!googleId) return;
+
+
+ netId = await getNetId(googleId);
+};
+
+
+initializeGlobalData();
+
 
 const ReportScreen = () => {
   const [reportMessage, setReportMessage] = useState("");
@@ -29,8 +47,9 @@ const ReportScreen = () => {
         setIsSubmitting(true);
     
         try {
-        const user1Id = 1; // Ensure userId is correctly retrieved
-        const user2Id=  2; // change wuth poster id
+        const googleID=await getGoogleId();
+        const user1Id = await getNetId(googleID); // Ensure userId is correctly retrieved
+        const user2Id=  await getPosterNetId(foodId); // change wuth poster id
         console.log("Sending report with data:", {
             foodId,
             reportMessage,

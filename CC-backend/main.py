@@ -183,6 +183,8 @@ async def complete_transaction(food_id: str = Form(...), user: str = Form(...)):
 # Create Pydantic models for the report
 class ReportBase(BaseModel):
     postId: str  # Changed from int to str to match MongoDB ObjectId
+    user1ID: str
+    user2ID:str
     message: str
     createdId: int
     isSubmitted: bool = True
@@ -205,19 +207,18 @@ class Report(ReportBase):
 report_collection = db.reports
 
 @app.post("/api/report")
-async def submit_report(postId: str = Form(...), message: str = Form(...), user1Id: int = Form(...), user2Id: int = Form(...)):
+async def submit_report(postId: str = Form(...), message: str = Form(...), user1Id: str = Form(...), user2Id: str = Form(...)):  # Changed type to str
     try:
-        print(f"Received report: postId={postId}, message={message}, user1Id={user1Id}, user2Id={user2Id}")  # Debug log
+        print(f"Received report: postId={postId}, message={message}, user1Id={user1Id}, user2Id={user2Id}")
 
         food_post = food_collection.find_one({"_id": ObjectId(postId)})
         if not food_post:
-            print("Food post not found!")  # Debug log
             raise HTTPException(status_code=404, detail="Food post not found")
 
         report_data = {
             "postId": postId,
-            "user1ID": user1Id,
-            "user2ID":user2Id,
+            "user1ID": user1Id,  # Remove toString() since it's already a string
+            "user2ID": user2Id,  # Remove toString() since it's already a string
             "message": message,
             "isSubmitted": True,
             "submittedAt": datetime.now(),
@@ -493,4 +494,25 @@ async def get_user_by_googleId(googleId: str):
         return {"netId": user["netId"]}
     except Exception as e:
         print(f"Error fetching user with googleId {googleId}: {str(e)}")  # Debug log
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/food/poster-netid/{food_id}")
+async def get_poster_netid(food_id: str):
+    try:
+        print(f"Fetching post with ID: {food_id}")
+        # Find the food post
+        food_post = food_collection.find_one({"_id": ObjectId(food_id)})
+        if not food_post:
+            raise HTTPException(status_code=404, detail="Food post not found")
+
+        # Get the poster's netId from the postedBy field
+        poster_netid = food_post.get("postedBy")
+        if not poster_netid:
+            raise HTTPException(status_code=404, detail="Poster information not found")
+
+        print(f"Found poster netId: {poster_netid}")
+        return {"netId": poster_netid}
+
+    except Exception as e:
+        print(f"Error fetching poster netId: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
