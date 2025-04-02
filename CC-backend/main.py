@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Form, HTTPException, UploadFile, File
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 from bson import ObjectId
@@ -62,6 +63,7 @@ async def post_food(
    
 ):
     try:
+        print(f"Received food post: {foodName}, {quantity}, {category}, {pickupLocation}, {pickupTime}, {photo}, {user}")  # Debug log
         if not all([foodName, quantity, category, pickupLocation, pickupTime, photo]):
             raise HTTPException(status_code=400, detail="All required fields must be filled")
 
@@ -93,6 +95,7 @@ async def post_food(
 @app.get("/api/food")
 async def get_food():
     try:
+        
         # Fetch all food items from the database
         food_posts = list(food_collection.find({}))
 
@@ -336,8 +339,6 @@ class UserRegistration(BaseModel):
 
 # Create a users collection
 users_collection = db.users  # Add this near your food_collection definition
-
-# Add user registration endpoint
 @app.post("/api/users/register")
 async def register_user(user: UserRegistration):
     try:
@@ -384,7 +385,6 @@ async def register_user(user: UserRegistration):
         raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 # Get user by googleId
 @app.get("/api/users/{googleId}")
 async def get_user(googleId: str):
@@ -452,4 +452,45 @@ async def get_user_profile(net_id: str):
 
     except Exception as e:
         print(f"Error fetching profile for netId {net_id}: {str(e)}")  # Debug log
+        raise HTTPException(status_code=500, detail=str(e))
+    
+from pydantic import BaseModel
+
+# Define a Pydantic model for the request body
+class GoogleIdRequest(BaseModel):
+    googleId: str
+
+@app.post("/api/users/check")
+async def check_user(request: GoogleIdRequest):
+    try:
+        # Extract googleId from the request body
+        googleId = request.googleId
+
+        # Check if the user exists in the database
+        user = users_collection.find_one({"googleId": googleId})
+        if not user:
+            
+            return JSONResponse(status_code=404, content={"message": "User not found"})
+
+        # Convert ObjectId to string for JSON serialization
+        user["_id"] = str(user["_id"])
+        return user
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
+@app.get("/api/users/netid/{googleId}")
+async def get_user_by_googleId(googleId: str):
+    try:
+        print(f"Fetching user with googleId: {googleId}")  # Debug log
+        # Query the database for the user with the given googleId
+        user = users_collection.find_one({"googleId": googleId})
+        if not user:
+            print(f"User with googleId {googleId} not found")
+            raise HTTPException(status_code=404, detail="User not found at all" )
+        
+        # Return only the netId of the user
+        return {"netId": user["netId"]}
+    except Exception as e:
+        print(f"Error fetching user with googleId {googleId}: {str(e)}")  # Debug log
         raise HTTPException(status_code=500, detail=str(e))

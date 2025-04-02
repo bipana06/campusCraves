@@ -5,6 +5,7 @@ const API_URL = "http://127.0.0.1:8000/api/food";
 const USER_API_URL = "http://127.0.0.1:8000/api/users";
 
 export const postFood = async (foodData) => {
+    console.log("Posting food data:", foodData);
     try {
         const formData = new FormData();
         formData.append("foodName", foodData.foodName);
@@ -23,12 +24,13 @@ export const postFood = async (foodData) => {
        
         formData.append("user", foodData.user); // Replace with actual user ID
         for (let [key, value] of formData.entries()) {
-                        console.log(key, value);
+                        console.log(key, value, typeof value);
                     }
 
         const response = await axios.post("http://127.0.0.1:8000/api/food", formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
+        window.alert("Success", "Food item posted successfully!"); //to be replaced with Alert.alert
         if (Platform.OS === "web") {
             // Use browser's alert for web
             window.alert("Success", "Food item posted successfully!");
@@ -117,8 +119,43 @@ export const getUser = async (googleId) => {
         throw error;
     }
 };
- 
 
+export const getNetId = async (googleId) => {
+    try {
+        if (!googleId) {
+            throw new Error("Google ID is required to fetch Net ID");
+        }
+
+        console.log("Fetching Net ID for Google ID:", googleId);
+        const response = await axios.get(`${USER_API_URL}/netid/${googleId}`); // Use path parameter
+        console.log("Net ID retrieved:", response.data.netId);
+        return response.data.netId;
+    } catch (error) {
+        console.error("Error fetching Net ID:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export const getGoogleId = async () => {
+    try {
+        
+        const storedUserInfo = await AsyncStorage.getItem('userInfo');
+        if (storedUserInfo) {
+            console.log("Retrieving googleId from AsyncStorage");
+            const parsedUserInfo = JSON.parse(storedUserInfo)
+            console.log("Parsed user info:", parsedUserInfo);
+            return parsedUserInfo.googleId; // Return the googleId
+        } else {
+            console.error("No user info found in AsyncStorage");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error retrieving googleId from AsyncStorage:", error);
+        return null;
+    }
+};
 
   
 export const submitReport = async (postId, message, user1Id, user2Id) => {
