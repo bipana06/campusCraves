@@ -1,109 +1,166 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, Image } from "react-native";
+import axios from "axios";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-
-export default function TabTwoScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
-  );
+interface UserData {
+    username: string;
+    email: string;
+    post_count: number;
+    received_count: number;
+    post_history: { _id: string; foodName: string; createdAt: string }[];
+    received_history: { _id: string; foodName: string; receivedAt: string }[];
 }
 
+const UserProfileScreen = () => {
+    const [userData, setUserData] = useState<UserData | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const userId = "xy1234"; // Replace with the logged-in user's ID
+                const response = await axios.get(`http://127.0.0.1:8000/api/users/profile/${userId}`);
+                setUserData(response.data);
+            } catch (error) {
+                console.error("Failed to fetch user profile:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
+    }
+
+    if (!userData) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.errorText}>Failed to load user profile.</Text>
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Image
+                    source={{ uri: "https://via.placeholder.com/100" }} // Replace with user's profile picture if available
+                    style={styles.profileImage}
+                />
+                <Text style={styles.username}>{userData.username}</Text>
+                <Text style={styles.email}>{userData.email}</Text>
+            </View>
+
+            <View style={styles.statsContainer}>
+                <View style={styles.statBox}>
+                    <Text style={styles.statNumber}>{userData.post_count}</Text>
+                    <Text style={styles.statLabel}>Posts</Text>
+                </View>
+                <View style={styles.statBox}>
+                    <Text style={styles.statNumber}>{userData.received_count}</Text>
+                    <Text style={styles.statLabel}>Received</Text>
+                </View>
+            </View>
+
+            <Text style={styles.sectionTitle}>Post History</Text>
+            <FlatList
+                data={userData.post_history}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                    <View style={styles.historyItem}>
+                        <Text style={styles.historyText}>{item.foodName}</Text>
+                        <Text style={styles.historyDate}>{new Date(item.createdAt).toLocaleString()}</Text>
+                    </View>
+                )}
+            />
+
+            <Text style={styles.sectionTitle}>Received History</Text>
+            <FlatList
+                data={userData.received_history}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                    <View style={styles.historyItem}>
+                        <Text style={styles.historyText}>{item.foodName}</Text>
+                        <Text style={styles.historyDate}>{new Date(item.receivedAt).toLocaleString()}</Text>
+                    </View>
+                )}
+            />
+        </View>
+    );
+};
+
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: "#fff",
+        padding: 20,
+    },
+    loader: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    errorText: {
+        color: "red",
+        textAlign: "center",
+        fontSize: 16,
+    },
+    header: {
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    profileImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        marginBottom: 10,
+    },
+    username: {
+        fontSize: 24,
+        fontWeight: "bold",
+    },
+    email: {
+        fontSize: 16,
+        color: "#555",
+    },
+    statsContainer: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        marginBottom: 20,
+    },
+    statBox: {
+        alignItems: "center",
+    },
+    statNumber: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+    statLabel: {
+        fontSize: 14,
+        color: "#555",
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 10,
+    },
+    historyItem: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#ddd",
+    },
+    historyText: {
+        fontSize: 16,
+    },
+    historyDate: {
+        fontSize: 14,
+        color: "#555",
+    },
 });
+
+export default UserProfileScreen;

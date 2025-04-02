@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, Image, Alert, StyleSheet, TouchableOpaci
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; // Required for Web
 import * as ImagePicker from "react-native-image-picker";
-import { postFood } from "../apiService";
+import { postFood,getGoogleId, getNetId  } from "../apiService";
 
 const FoodPostScreen = () => {
     const [foodName, setFoodName] = useState("");
@@ -39,10 +39,28 @@ const FoodPostScreen = () => {
     };
 
     const handleSubmit = async () => {
+        console.log("Submitting food post...");
         if (!foodName || !quantity || !category || !pickupLocation || !pickupTime || !photo) {
             Alert.alert("Error", "Please fill all required fields and upload an image.");
             return;
         }
+         // Retrieve googleId from AsyncStorage
+         const googleId = await getGoogleId();
+         console.log("Google ID:", googleId);
+         if (!googleId) {
+             Alert.alert("Error", "Failed to retrieve Google ID. Please log in again.");
+             return;
+         }
+        
+
+         // Fetch netId using googleId
+         const netId = await getNetId(googleId);
+         if (!netId) {
+             Alert.alert("Error", "Failed to retrieve Net ID. Please try again.");
+             return;
+         }
+
+        
 
         const foodData = {
             foodName,
@@ -53,11 +71,12 @@ const FoodPostScreen = () => {
             pickupTime: pickupTime.toISOString(),
             expirationTime: expirationTime ? expirationTime.toISOString() : null,
             photo: photo,
-            user: "Fittu",
+            user: netId,
             createdAt: new Date().toISOString(),
         };
 
         try {
+            
             const response = await postFood(foodData);
             Alert.alert("Success", response.message);
         } catch (error) {
