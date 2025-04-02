@@ -4,6 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; // Required for Web
 import * as ImagePicker from "react-native-image-picker";
 import { postFood,getGoogleId, getNetId  } from "../apiService";
+import { AuthGuard } from "@/components/AuthGuard"; // Import the AuthGuard
 
 const FoodPostScreen = () => {
     const [foodName, setFoodName] = useState("");
@@ -156,4 +157,12 @@ const styles = StyleSheet.create({
     },
 });
 
-export default FoodPostScreen;
+// export default FoodPostScreen;
+
+export default function ProtectedFoodPostScreen() {
+    return (
+        <AuthGuard>
+            <FoodPostScreen />
+        </AuthGuard>
+    );
+}

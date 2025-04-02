@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Button, StyleSheet, Image, ActivityIndicator, Alert } from "react-native";
+import { View, Button, StyleSheet, Image, ActivityIndicator, Alert, TouchableOpacity, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -112,31 +112,38 @@ export default function PageZero() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
+      // headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
+      headerBackgroundColor={{light: "#00000", dark: "#00000"}}
       headerImage={
         <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
+        source={require("@/assets/images/CCLogo.png")}
+        style={styles.reactLogo}
         />
       }
     >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Sign in to continue</ThemedText>
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Sign in with Google"
+      <ThemedView style={styles.container}>
+        <ThemedText type="title" style={styles.title}>
+          Welcome to <Text style={styles.italic}>campusCraves</Text>!
+        </ThemedText>
+        <ThemedText type="subtitle" style={styles.subtitle}>
+          Share. Discover. Enjoy.
+        </ThemedText>
+        <ThemedText style={styles.description}>
+          Join a community where students share food, discover hidden gems on campus, and reduce waste together.
+        </ThemedText>
+        <View style={styles.stepContainer}>
+          <TouchableOpacity
+            style={styles.buttonContainer}
             onPress={() => {
               setAuthError(null);
               promptAsync();
             }}
-            color="#4285F4"
-          />
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>Sign in with Google</Text>
+          </TouchableOpacity>
+          {authError && <ThemedText style={styles.errorText}>{authError}</ThemedText>}
         </View>
-        {authError && <ThemedText style={{ color: "red" }}>{authError}</ThemedText>}
       </ThemedView>
     </ParallaxScrollView>
   );
@@ -153,18 +160,71 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
+  reactLogo: {
+    height: 300,
+    width: 300,
+    alignSelf: "center",
+    resizeMode: "contain",
+    marginTop: 20,
+  },
   stepContainer: {
     gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+    marginTop: 20,
+    alignItems: "center",
   },
   buttonContainer: {
+    backgroundColor: "#85A947",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
     marginVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonText: {
+    color: "#EFE3C2",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  container: {
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+  },
+  title: {
+    fontSize: 50,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#3E7B27",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 10,
+    color: "#85A947",
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 20,
+    textAlign: "center",
+    marginTop: 15,
+    color: "#EFE3C2",
+    paddingHorizontal: 15,
+  },
+  errorText: {
+    color: "red",
+    marginTop: 5,
+  },
+  headerImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+    alignContent: "center",
+  },
+  italic: {
+    fontStyle: "italic",
   },
 });
