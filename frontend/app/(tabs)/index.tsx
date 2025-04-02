@@ -31,6 +31,19 @@ const AppEntry = () => {
         checkAuth();
     }, []);
 
+    const handleLogout = async () => {
+        try {
+          // Remove all authentication-related items from AsyncStorage
+          await AsyncStorage.multiRemove(['userToken', 'userInfo', 'userProfile']);
+          // Navigate to the authentication page
+          router.replace("/screens/pageZero");
+        } catch (error) {
+          console.error("Error during logout:", error);
+          setAuthError("Failed to logout. Please try again.");
+    
+        }
+      };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -61,6 +74,13 @@ const AppEntry = () => {
                     color="#FF9800"
                 />
             </View>
+            <View style={{ marginTop: 20 }}>
+        <Button
+          title="Logout"
+          onPress={handleLogout}
+          color="#d32f2f"
+        />
+      </View>
         </View>
     );
 };

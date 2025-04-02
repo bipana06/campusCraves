@@ -168,7 +168,7 @@ const renderItem = ({ item }: { item: FoodItem }) => {
     
     const handleReport = () => {
         router.push({
-            pathname: "../screens/ReportScreen",
+            pathname: "../ReportScreen",
             params: { 
                 foodId: item.id, 
                 foodName: item.foodName 
@@ -439,7 +439,10 @@ const MyPostsTab = () => {
                    // Filter items where reservedBy matches currentUser
                 const myReservations: FoodItem[] = data.filter((item: FoodItem) =>
                     item.reservedBy === netId
-                );  const filteredData = filterExpiredItems(myReservations);
+                );  
+                console.log("My Reservations:", myReservations);
+                
+                const filteredData = filterExpiredItems(myReservations);
                    setReservedItems(filteredData);
                } catch (error) {
                    console.error("Failed to fetch reserved items:", error);
