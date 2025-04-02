@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
+
 const Tab = createMaterialTopTabNavigator();
 
 const MarketPlaceScreen = () => {
@@ -148,6 +149,13 @@ const renderItem = ({ item }: { item: FoodItem }) => {
         if (!netId) {
             return;
         }
+        
+    // Check if the current user is the same as the person who posted the food
+    if (item.postedBy === netId) {
+        alert("You cannot reserve food that you posted.");
+        return;
+    }
+
 
         try {
             const user = netId; // Replace with the actual logged-in user's identifier
