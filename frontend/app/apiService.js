@@ -144,9 +144,17 @@ export const getGoogleId = async () => {
         const storedUserInfo = await AsyncStorage.getItem('userInfo');
         if (storedUserInfo) {
             console.log("Retrieving googleId from AsyncStorage");
-            const parsedUserInfo = JSON.parse(storedUserInfo)
+            const parsedUserInfo = JSON.parse(storedUserInfo);
             console.log("Parsed user info:", parsedUserInfo);
-            return parsedUserInfo.googleId; // Return the googleId
+
+            // Use googleId if available, otherwise fallback to id
+            const googleId = parsedUserInfo.googleId || parsedUserInfo.id;
+            if (!googleId) {
+                console.error("Neither googleId nor id is available in user info");
+                return null;
+            }
+
+            return googleId; // Return the googleId or id
         } else {
             console.error("No user info found in AsyncStorage");
             return null;

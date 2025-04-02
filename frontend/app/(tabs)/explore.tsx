@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, Image } from "react-native";
 import axios from "axios";
-
+import {getGoogleId, getNetId  } from "../apiService";
 interface UserData {
     username: string;
     email: string;
@@ -17,8 +17,23 @@ const UserProfileScreen = () => {
 
     useEffect(() => {
         const fetchUserProfile = async () => {
+            // Retrieve googleId from AsyncStorage
+        const googleId = await getGoogleId();
+        console.log("Google ID:", googleId);
+        if (!googleId) {
+           
+            return;
+        }
+
+        // Fetch netId using googleId
+        const netId = await getNetId(googleId);
+        if (!netId) {
+    
+            return;
+        }
+
             try {
-                const userId = "xy1234"; // Replace with the logged-in user's ID
+                const userId = netId; // Replace with the logged-in user's ID
                 const response = await axios.get(`http://127.0.0.1:8000/api/users/profile/${userId}`);
                 setUserData(response.data);
             } catch (error) {
