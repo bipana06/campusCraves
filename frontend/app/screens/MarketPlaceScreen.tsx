@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, Button, TextInput,
     Modal,
     TouchableOpacity,} from "react-native";
-import { getFoodItems, reserveFood, searchFoodItems } from "../apiService";
+import { getFoodItems, reserveFood, searchFoodItems, completeTransaction,getGoogleId, getNetId   } from "../apiService";
+
 import { useRouter } from "expo-router";
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
@@ -15,11 +16,24 @@ const MarketPlaceScreen = () => {
     return (
         <Tab.Navigator>
             <Tab.Screen name="Marketplace" component={MarketplaceTab} />
-            <Tab.Screen name="My Orders" component={MyOrdersTab} />
-            <Tab.Screen name="My Reservations" component={MyReservationsTab} />
+            <Tab.Screen name="My Active Posts" component={MyPostsTab} />
+            <Tab.Screen name="My Active Reservations" component={MyReservationsTab} />
         </Tab.Navigator>
     );
 };
+let googleId: string | null = null;
+let netId: string | null = null;
+
+const initializeGlobalData = async () => {
+  googleId = await getGoogleId();
+  console.log("Google ID:", googleId);
+  
+  if (!googleId) return;
+
+  netId = await getNetId(googleId);
+};
+
+initializeGlobalData();
 
 interface FoodItem {
    id: number;
@@ -34,6 +48,7 @@ interface FoodItem {
    reportCount: number;
    createdAt: string;
    expirationTime: string;
+   reservedBy: string;
 }
 
 
@@ -126,8 +141,16 @@ const renderItem = ({ item }: { item: FoodItem }) => {
     const statusStyle = getStatusStyle(item.status);
 
     const handleReserve = async () => {
+        
+      
+
+
+        if (!netId) {
+            return;
+        }
+
         try {
-            const user = "currentUser"; // Replace with the actual logged-in user's identifier
+            const user = netId; // Replace with the actual logged-in user's identifier
             const response = await reserveFood(item.id, user);
             console.log("Reservation successful:", response);
 
@@ -198,7 +221,7 @@ const renderItem = ({ item }: { item: FoodItem }) => {
 
    return (
     <View style={styles.container}>
-    <TouchableOpacity onPress={() => router.push('../screens/FoodPostScreen')} style={styles.postButton}>
+    <TouchableOpacity onPress={() => router.push('../FoodPostScreen')} style={styles.postButton}>
                     <Text style={styles.postButtonText}>Post Food</Text>
                 </TouchableOpacity>
 
@@ -261,128 +284,454 @@ const filterExpiredItems = (items: FoodItem[]): FoodItem[] => {
 };
 
 
-const MyOrdersTab = () => {
-    return (
-        <View style={styles.container}>
-            <Text>My Orders Content</Text>
-        </View>
-    );
-};
-
-const MyReservationsTab = () => {
-    return (
-        <View style={styles.container}>
-            <Text>My Reservations Content</Text>
-        </View>
-    );
-};
 
 
-const styles = StyleSheet.create({
-container: {
-flex: 1,
-backgroundColor: "#fff",
-padding: 20,
-},
-loader: {
-flex: 1,
-justifyContent: "center",
-alignItems: "center",
-},
-title: {
-fontSize: 24,
-fontWeight: "bold",
-marginBottom: 10,
-textAlign: "center",
-},
-card: {
-flexDirection: "row",
-backgroundColor: "#f9f9f9",
-borderRadius: 10,
-padding: 15,
-marginBottom: 10,
-alignItems: "center",
-shadowColor: "#000",
-shadowOffset: { width: 0, height: 2 },
-shadowOpacity: 0.1,
-shadowRadius: 5,
-elevation: 2,
-},
-image: {
-width: 80,
-height: 80,
-borderRadius: 10,
-marginRight: 15,
-},
-textContainer: {
-flex: 1,
-},
-foodName: {
-fontSize: 18,
-fontWeight: "bold",
-marginBottom: 5,
-},
-detail: {
-fontSize: 14,
-color: "#555",
-},
-searchButton: {
-    backgroundColor: "#007bff",
-    paddingVertical: 10, // Adjust vertical padding for height
-    paddingHorizontal: 20, // Adjust horizontal padding for width
-    borderRadius: 5,
-    alignItems: "center", // Center text horizontally
-    justifyContent: "center", // Center text vertically
-    alignSelf: "center", // Center the button within its parent container
-    marginVertical: 10, // Add spacing above and below the butto
-},
-searchButtonText: {
-color: "#fff",
-textAlign: "center",
-fontWeight: "bold",
-},
-modalView: {
-flex: 1,
-justifyContent: "center",
-alignItems: "center",
-backgroundColor: "rgba(0, 0, 0, 0.5)",
-padding: 20,
-},
-buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 10,
-},
-reportButton: {
-    backgroundColor: "#d32f2f",
-    alignItems: "center",
-    paddingVertical: 7,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-},
-reportButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-},
-input: {
-backgroundColor: "#fff",
-padding: 10,
-marginBottom: 10,
-borderRadius: 5,
-width: "80%",
-},
-postButton: {
-    backgroundColor: "#28a745",
-    paddingVertical: 10, // Adjust vertical padding for height
-    paddingHorizontal: 20, // Adjust horizontal padding for width
-    borderRadius: 5,
-    alignItems: "center", // Center text horizontally
-    justifyContent: "center", // Center text vertically
-    alignSelf: "center", // Center the button within its parent container
-    marginVertical: 10, // Add spacing above and below the button
-},
-    postButtonText: { color: "#fff", fontWeight: "bold" },
-});
+const MyPostsTab = () => {
+    const router = useRouter();
+       
+    
+        const [myFoodItems, setMyFoodItems] = useState<FoodItem[]>([]);
+       const [loading, setLoading] = useState(true);
+
+       
+    
+    
+       useEffect(() => {
+
+           const fetchMyFoodItems = async () => {
+            
+        
+               try {
+                   const data = await getFoodItems();
+                   // Filter items where postedBy matches currentUser
+                const myItems: FoodItem[] = data.filter((item: FoodItem) => item.postedBy === netId);  const filteredData = filterExpiredItems(myItems);
+                   setMyFoodItems(filteredData);
+               } catch (error) {
+                   console.error("Failed to fetch my food items:", error);
+               } finally {
+                   setLoading(false);
+               }
+           };
+    
+    
+           fetchMyFoodItems();
+       }, []);
+    
+    
+       const getStatusStyle = (status?: string) => {
+           if (!status) {
+               return { text: "Unknown", color: "gray" };
+           }
+      
+           switch (status.toLowerCase()) {
+               case "green":
+                   return { text: "Available", color: "green" };
+               case "yellow":
+                   return { text: "Reserved", color: "orange" };
+               case "red":
+                   return { text: "Unavailable", color: "red" };
+               default:
+                   return { text: "Unknown", color: "gray" };
+           }
+       };
+    
+    
+       const formatDateTime = (dateString: string): string => {
+           const date = new Date(dateString);
+           if (isNaN(date.getTime())) {
+               return new Intl.DateTimeFormat("en-US", {
+                   month: "short",
+                   day: "numeric",
+                   year: "numeric",
+                   hour: "2-digit",
+                   minute: "2-digit",
+               }).format(new Date());
+           }
+           return new Intl.DateTimeFormat("en-US", {
+               month: "short",
+               day: "numeric",
+               year: "numeric",
+               hour: "2-digit",
+               minute: "2-digit",
+           }).format(date);
+       };
+    
+    
+    
+    
+       const renderItem = ({ item }: { item: FoodItem }) => {
+       const statusStyle = getStatusStyle(item.status);
+       const isCompleted = item.status === "red";
+    
+    
+       return (
+           <View style={styles.card}>
+               <Image source={{ uri: item.photo }} style={styles.image} />
+    
+    
+               <View style={styles.textContainer}>
+                   <Text style={styles.foodName}>{item.foodName}</Text>
+                   <Text style={styles.detail}>Quantity: {item.quantity}</Text>
+                   <Text style={styles.detail}>Category: {item.category}</Text>
+                   <Text style={styles.detail}>Pickup Location: {item.pickupLocation}</Text>
+                   <Text style={styles.detail}>Pickup Time: {formatDateTime(item.pickupTime)}</Text>
+                   <Text style={[styles.detail, { color: statusStyle.color, fontWeight: "bold" }]}>
+                       Status: {statusStyle.text}
+                   </Text>
+                   <Text style={styles.detail}>Report Count: {item.reportCount}</Text>
+                   <Text style={styles.detail}>Created At: {formatDateTime(item.createdAt)}</Text>
+                   <Text style={styles.detail}>Expiration Time: {formatDateTime(item.expirationTime)}</Text>
+                  
+               </View>
+           </View>
+       );
+    };
+    
+    
+       if (loading) {
+           return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
+       }
+    
+    
+       return (
+           <View style={styles.container}>
+               <View style={styles.header}>
+                   <Text style={styles.title}>My Food Posts</Text>
+                   <Text style={styles.userText}>{netId}</Text>
+               </View>
+    
+    
+               {myFoodItems.length === 0 ? (
+                   <View style={styles.emptyState}>
+                       <Text style={styles.emptyStateText}>You haven't posted any food items yet.</Text>
+                       <TouchableOpacity
+                           onPress={() => router.push('../FoodPostScreen')}
+                           style={styles.postButton}
+                       >
+                           <Text style={styles.postButtonText}>Post Food Now</Text>
+                       </TouchableOpacity>
+                   </View>
+               ) : (
+                   <FlatList
+                       data={myFoodItems}
+                       keyExtractor={(item) => item.id.toString()}
+                       renderItem={renderItem}
+                   />
+               )}
+           </View>
+       );
+    };
+    
+    
+    const MyReservationsTab = () => {
+        const router = useRouter();
+        const [reservedItems, setReservedItems] = useState<FoodItem[]>([]);
+        const [loading, setLoading] = useState(true);
+         // Replace with your actual current user identifier
+          
+       useEffect(() => {
+           const fetchReservedItems = async () => {
+           
+    
+               try {
+
+                   const data = await getFoodItems();
+                   // Filter items where reservedBy matches currentUser
+                const myReservations: FoodItem[] = data.filter((item: FoodItem) =>
+                    item.reservedBy === netId
+                );  const filteredData = filterExpiredItems(myReservations);
+                   setReservedItems(filteredData);
+               } catch (error) {
+                   console.error("Failed to fetch reserved items:", error);
+               } finally {
+                   setLoading(false);
+               }
+           };
+    
+    
+           fetchReservedItems();
+       }, []);
+    
+    
+       const getStatusStyle = (status?: string) => {
+           if (!status) {
+               return { text: "Unknown", color: "gray" };
+           }
+      
+           switch (status.toLowerCase()) {
+               case "green":
+                   return { text: "Available", color: "green" };
+               case "yellow":
+                   return { text: "Reserved by You", color: "orange" };
+               case "red":
+                   return { text: "Completed", color: "red" };
+               default:
+                   return { text: "Unknown", color: "gray" };
+           }
+       };
+    
+    
+       const formatDateTime = (dateString: string): string => {
+           const date = new Date(dateString);
+           if (isNaN(date.getTime())) {
+               return new Intl.DateTimeFormat("en-US", {
+                   month: "short",
+                   day: "numeric",
+                   year: "numeric",
+                   hour: "2-digit",
+                   minute: "2-digit",
+               }).format(new Date());
+           }
+           return new Intl.DateTimeFormat("en-US", {
+               month: "short",
+               day: "numeric",
+               year: "numeric",
+               hour: "2-digit",
+               minute: "2-digit",
+           }).format(date);
+       };
+      
+       const renderItem = ({ item }: { item: FoodItem }) => {
+           const statusStyle = getStatusStyle(item.status);
+           const isCompleted = item.status === "red";
+           const isReserved = item.status === "yellow" && item.reservedBy === netId;
+    
+    
+           const handleCompleteTransaction = async () => {
+               try {
+                   // Call the API to mark the transaction as complete
+                   await completeTransaction(item.id, netId);
+                   console.log("Transaction completed successfully");
+                  
+                   // Update the UI state
+                   setReservedItems(prevItems =>
+                       prevItems.map(item =>
+                           item.id === item.id
+                               ? { ...item, status: "red" }
+                               : item
+                       )
+                   );
+                   alert("Transaction completed successfully!");
+               } catch (error) {
+                   console.error("Failed to complete transaction:", error);
+                   if (error instanceof Error) {
+                       alert(`Failed to complete transaction: ${error.message}`);
+                   } else {
+                       alert("Failed to complete transaction: An unknown error occurred.");
+                   }
+               }
+           };
+    
+    
+           return (
+               <View style={styles.card}>
+                   <Image source={{ uri: item.photo }} style={styles.image} />
+    
+    
+                   <View style={styles.textContainer}>
+                       <Text style={styles.foodName}>{item.foodName}</Text>
+                       <Text style={styles.detail}>Quantity: {item.quantity}</Text>
+                       <Text style={styles.detail}>Category: {item.category}</Text>
+                       <Text style={styles.detail}>Pickup Location: {item.pickupLocation}</Text>
+                       <Text style={styles.detail}>Pickup Time: {formatDateTime(item.pickupTime)}</Text>
+                       <Text style={[styles.detail, { color: statusStyle.color, fontWeight: "bold" }]}>
+                           Status: {statusStyle.text}
+                       </Text>
+                       <Text style={styles.detail}>Posted By: {item.postedBy}</Text>
+                       <Text style={styles.detail}>Report Count: {item.reportCount}</Text>
+                       <Text style={styles.detail}>Created At: {formatDateTime(item.createdAt)}</Text>
+                       <Text style={styles.detail}>Expiration Time: {formatDateTime(item.expirationTime)}</Text>
+    
+    
+                       {isReserved && !isCompleted && (
+                           <>
+                               <TouchableOpacity
+                                   style={styles.completeButton}
+                                   onPress={() => handleCompleteTransaction()}
+                               >
+                                   <Text style={styles.completeButtonText}>
+                                       Complete Transaction
+                                   </Text>
+                               </TouchableOpacity>
+                              
+                           </>
+                       )}
+    
+    
+                       {isCompleted && (
+                           <Text style={[styles.detail, { color: 'red', fontWeight: 'bold' }]}>
+                               Transaction Completed
+                           </Text>
+                       )}
+                   </View>
+               </View>
+           );
+       };
+    
+    
+       if (loading) {
+           return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
+       }
+    
+    
+       return (
+           <View style={styles.container}>
+               <View style={styles.header}>
+                   <Text style={styles.title}>My Reservations</Text>
+                   <Text style={styles.userText}>{netId}</Text>
+               </View>
+    
+    
+               {reservedItems.length === 0 ? (
+                   <View style={styles.emptyState}>
+                       <Text style={styles.emptyStateText}>You haven't reserved any food items yet.</Text>
+                   </View>
+               ) : (
+                   <FlatList
+                       data={reservedItems}
+                       keyExtractor={(item) => item.id.toString()}
+                       renderItem={renderItem}
+                   />
+               )}
+           </View>
+       );
+    };
+    
+
+
+    const styles = StyleSheet.create({
+        container: {
+        flex: 1,
+        backgroundColor: "#fff",
+        padding: 20,
+        },
+        loader: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        },
+        title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        marginBottom: 10,
+        textAlign: "center",
+        },
+        card: {
+        flexDirection: "row",
+        backgroundColor: "#f9f9f9",
+        borderRadius: 10,
+        padding: 15,
+        marginBottom: 10,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 2,
+        },
+        image: {
+        width: 80,
+        height: 80,
+        borderRadius: 10,
+        marginRight: 15,
+        },
+        textContainer: {
+        flex: 1,
+        },
+        foodName: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 5,
+        },
+        detail: {
+        fontSize: 14,
+        color: "#555",
+        },
+        searchButton: {
+           backgroundColor: "#007bff",
+           paddingVertical: 10, // Adjust vertical padding for height
+           paddingHorizontal: 20, // Adjust horizontal padding for width
+           borderRadius: 5,
+           alignItems: "center", // Center text horizontally
+           justifyContent: "center", // Center text vertically
+           alignSelf: "center", // Center the button within its parent container
+           marginVertical: 10, // Add spacing above and below the butto
+        },
+        searchButtonText: {
+        color: "#fff",
+        textAlign: "center",
+        fontWeight: "bold",
+        },
+        modalView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        padding: 20,
+        },
+        buttonRow: {
+           flexDirection: "row",
+           justifyContent: "space-between",
+           alignItems: "center",
+           marginTop: 10,
+        },
+        reportButton: {
+           backgroundColor: "#d32f2f",
+           alignItems: "center",
+           paddingVertical: 7,
+           paddingHorizontal: 15,
+           borderRadius: 5,
+        },
+        reportButtonText: {
+           color: "#fff",
+           fontWeight: "bold",
+        },
+        input: {
+        backgroundColor: "#fff",
+        padding: 10,
+        marginBottom: 10,
+        borderRadius: 5,
+        width: "80%",
+        },
+        postButton: {
+           backgroundColor: "#28a745",
+           paddingVertical: 10, // Adjust vertical padding for height
+           paddingHorizontal: 20, // Adjust horizontal padding for width
+           borderRadius: 5,
+           alignItems: "center", // Center text horizontally
+           justifyContent: "center", // Center text vertically
+           alignSelf: "center", // Center the button within its parent container
+           marginVertical: 10, // Add spacing above and below the button
+        },
+           postButtonText: { color: "#fff", fontWeight: "bold" },
+           header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+           userText: { fontSize: 16, color: "gray" },
+           emptyState: {
+               flex: 1,
+               justifyContent: 'center',
+               alignItems: 'center',
+               padding: 20,
+           },
+           emptyStateText: {
+               fontSize: 18,
+               textAlign: 'center',
+               marginBottom: 20,
+           },
+           completeButton: {
+               backgroundColor: '#4CAF50',
+               padding: 10,
+               borderRadius: 5,
+               marginTop: 10,
+               alignItems: 'center',
+           },
+           completedButton: {
+               backgroundColor: '#cccccc',
+           },
+           completeButtonText: {
+               color: 'white',
+               fontWeight: 'bold',
+           },
+        });
+        
 
 export default MarketPlaceScreen;

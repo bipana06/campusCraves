@@ -75,6 +75,30 @@ export const reserveFood = async (foodId, user) => {
         throw error;
     }
 };
+
+export const completeTransaction = async (foodId, user) => {
+    try {
+        const formData = new FormData();
+        formData.append("food_id", foodId);
+        formData.append("user", user);
+ 
+ 
+        const response = await axios.post(
+            `${API_URL}/complete`,  // Note the /api prefix
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error completing transaction:", error.response?.data || error.message);
+        throw error;
+    }
+ };
+ 
 // get the foods according to filters
 export const searchFoodItems = async (filters) => {
     try {
@@ -196,6 +220,8 @@ export const submitReport = async (postId, message, user1Id, user2Id) => {
 export default {
     postFood,
     getFoodItems,
+    completeTransaction,
+    getNetId,
     searchFoodItems,
     reserveFood,
     submitReport,
