@@ -99,7 +99,6 @@ const UserProfileScreen = () => {
                 renderItem={({ item }) => (
                     <View style={styles.historyItem}>
                         <Text style={styles.historyText}>{item.foodName}</Text>
-                        <Text style={styles.historyDate}>{new Date(item.receivedAt).toLocaleString()}</Text>
                     </View>
                 )}
             />

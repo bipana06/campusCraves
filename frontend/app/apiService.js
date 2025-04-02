@@ -215,7 +215,17 @@ export const submitReport = async (postId, message, user1Id, user2Id) => {
       throw error;
     }
   };
-  
+// Add this to apiService.js
+export const logoutUser = async () => {
+    try {
+      // Clear all authentication-related items from AsyncStorage
+      await AsyncStorage.multiRemove(['userToken', 'userInfo', 'userProfile']);
+      return { success: true };
+    } catch (error) {
+      console.error("Error during logout:", error);
+      throw error;
+    }
+  };
 
 export default {
     postFood,
@@ -226,7 +236,8 @@ export default {
     reserveFood,
     submitReport,
     registerUser,
-    getUser
+    getUser,
+    logoutUser
  }
  
 
