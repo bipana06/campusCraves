@@ -25,6 +25,12 @@ app.add_middleware(
 client = MongoClient(os.getenv("MONGO_URI"), tls=True, tlsAllowInvalidCertificates=True)
 db = client.food_db
 food_collection = db.food_posts
+# Create a new collection for reports
+report_collection = db.reports
+# Create a users collection
+users_collection = db.users  # Add this near your food_collection definition
+
+
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -203,8 +209,6 @@ class Report(ReportBase):
         # Allow extra fields from MongoDB
         extra = "allow"
 
-# Create a new collection for reports
-report_collection = db.reports
 
 @app.post("/api/report")
 async def submit_report(postId: str = Form(...), message: str = Form(...), user1Id: str = Form(...), user2Id: str = Form(...)):  # Changed type to str
@@ -338,8 +342,6 @@ class UserRegistration(BaseModel):
     phoneNumber: Optional[str] = None
     picture: Optional[str] = None
 
-# Create a users collection
-users_collection = db.users  # Add this near your food_collection definition
 @app.post("/api/users/register")
 async def register_user(user: UserRegistration):
     try:
