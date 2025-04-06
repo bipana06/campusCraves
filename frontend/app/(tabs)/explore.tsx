@@ -34,7 +34,7 @@ const UserProfileScreen = () => {
 
             try {
                 const userId = netId; // Replace with the logged-in user's ID
-                const response = await axios.get(`http://127.0.0.1:8000/api/users/profile/${userId}`);
+                const response = await axios.get(`https://campuscraves.onrender.com/api/users/profile/${userId}`);
                 setUserData(response.data);
             } catch (error) {
                 console.error("Failed to fetch user profile:", error);

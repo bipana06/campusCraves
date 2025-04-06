@@ -1,8 +1,11 @@
 import axios from "axios";
 import { Alert } from "react-native";
 
-const API_URL = "http://127.0.0.1:8000/api/food"; 
-const USER_API_URL = "http://127.0.0.1:8000/api/users";
+// const API_URL = "http://127.0.0.1:10000/api/food"; 
+// const USER_API_URL = "http://127.0.0.1:10000/api/users";
+const API_URL = "https://campuscraves.onrender.com/api/food"; 
+const USER_API_URL = "https://campuscraves.onrender.com/api/users";
+const API_framework = "https://campuscraves.onrender.com/"
 
 export const postFood = async (foodData) => {
     console.log("Posting food data:", foodData);
@@ -27,7 +30,7 @@ export const postFood = async (foodData) => {
                         console.log(key, value, typeof value);
                     }
 
-        const response = await axios.post("http://127.0.0.1:8000/api/food", formData, {
+        const response = await axios.post(API_URL, formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
         window.alert("Success", "Food item posted successfully!"); //to be replaced with Alert.alert
@@ -192,7 +195,7 @@ export const getGoogleId = async () => {
   
 export const submitReport = async (postId, message, user1Id, user2Id) => {
     try {
-      const response = await fetch("http://localhost:8000/api/report", {
+      const response = await fetch(`${API_framework}api/report`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded", // Ensure this matches FastAPI's expected format
