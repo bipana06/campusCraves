@@ -30,7 +30,16 @@ const AppEntry = () => {
 
         checkAuth();
     }, []);
-
+    const handleReport = () => {
+        try {
+            router.push({
+                pathname: '../ReportScreen',
+                params: { foodId: item.id, foodName: item.foodName }
+            });
+        } catch (error) {
+            console.error('Report navigation error:', error);
+        }
+    };
     const handleLogout = async () => {
         try {
           // Remove all authentication-related items from AsyncStorage

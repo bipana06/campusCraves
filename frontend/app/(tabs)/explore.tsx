@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, Image } from "react-native";
 import axios from "axios";
 import {getGoogleId, getNetId  } from "../apiService";
+import { useRouter } from "expo-router";
+import { Button } from "react-native";
+const router = useRouter();
 interface UserData {
     username: string;
     email: string;
@@ -9,8 +12,29 @@ interface UserData {
     received_count: number;
     post_history: { _id: string; foodName: string; createdAt: string }[];
     received_history: { _id: string; foodName: string; receivedAt: string }[];
+    _id: string;  // MongoDB usually uses _id
+    id?: string;  // Optional fallback
+    foodName: string;
 }
 
+const handleReport = (item) => {
+    try {
+        // Add debugging
+        console.log("Item being reported:", item);
+        const foodId = item._id || item.id; // Try both _id and id
+        
+        if (!foodId) {
+            console.error("No valid ID found in item:", item);
+            return;
+        }
+        router.push({
+            pathname: '../screens/ReportScreen',
+            params: { foodId: foodId, foodName: item.foodName }
+        });
+    } catch (error) {
+        console.error('Report navigation error:', error);
+    }
+};
 const UserProfileScreen = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -101,7 +125,20 @@ const UserProfileScreen = () => {
                         <Text style={styles.historyText}>{item.foodName}</Text>
                     </View>
                 )}
+                renderItem={({ item }) => (
+                    <View style={styles.historyItem}>
+                        <Text style={styles.historyText}>{item.foodName}</Text>
+                        <Text style={styles.historyDate}>{new Date(item.createdAt).toLocaleString()}</Text>
+                        <Button
+                            title="Report"
+                            onPress={() => handleReport(item)}
+                            color="red"
+                        />
+                    </View>
+                )}
+
             />
+
         </View>
     );
 };

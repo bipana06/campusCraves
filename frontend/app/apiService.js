@@ -241,6 +241,15 @@ export const logoutUser = async () => {
         throw error;
     }
 };
+export const canReportPost = async (postId, userId) => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/report/can-report/${postId}/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error checking report eligibility:", error);
+      throw error;
+    }
+  };
 
 export default {
     postFood,
@@ -253,7 +262,8 @@ export default {
     registerUser,
     getUser,
     logoutUser,
-    getPosterNetId
+    getPosterNetId,
+    canReportPost
  }
  
 

@@ -518,3 +518,28 @@ async def get_poster_netid(food_id: str):
     except Exception as e:
         print(f"Error fetching poster netId: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/api/report/can-report/{post_id}/{user_id}")
+async def can_report(post_id: str, user_id: str):
+  try:
+    # Check if user is reporting their own post
+    food_post = food_collection.find_one({"_id": ObjectId(post_id)})
+    if not food_post:
+      raise HTTPException(status_code=404, detail="Food post not found")
+    
+    if food_post.get("postedBy") == user_id:
+      return {"canReport": False, "reason": "You cannot report your own post"}
+
+    # Check if user has already reported this post
+    existing_report = report_collection.find_one({
+      "postId": post_id,
+      "user1ID": user_id
+    })
+    
+    if existing_report:
+      return {"canReport": False, "reason": "You have already reported this post"}
+
+    return {"canReport": True, "reason": None}
+
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
