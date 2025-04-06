@@ -9,6 +9,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { HelloWave } from "@/components/HelloWave";
 
+import { GOOGLE_CLIENT_ID, GOOGLE_WEB_CLIENT_ID, REDIRECT_URI } from '@env';
+
+
 // Complete the auth session
 WebBrowser.maybeCompleteAuthSession();
 
@@ -19,10 +22,10 @@ export default function PageZero() {
 
   // Google Auth Request
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: "556981446145-qa9vinqthj28lmv49of5ssor9im3pk1v.apps.googleusercontent.com",
-    webClientId: "556981446145-qa9vinqthj28lmv49of5ssor9im3pk1v.apps.googleusercontent.com",
-    redirectUri: "http://localhost:8081/",
-    scopes: ["profile", "email"],
+    clientId: GOOGLE_CLIENT_ID,
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    redirectUri: REDIRECT_URI,
+    scopes: ['profile', 'email'],
   });
 
   // Check for existing authentication
