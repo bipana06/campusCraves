@@ -226,6 +226,21 @@ export const logoutUser = async () => {
       throw error;
     }
   };
+  export const getPosterNetId = async (foodId) => {
+    try {
+        if (!foodId) {
+            throw new Error("Food ID is required to fetch poster's Net ID");
+        }
+
+        console.log("Fetching poster's Net ID for food ID:", foodId);
+        const response = await axios.get(`${API_URL}/poster-netid/${foodId}`);
+        console.log("Poster's Net ID retrieved:", response.data.netId);
+        return response.data.netId;
+    } catch (error) {
+        console.error("Error fetching poster's Net ID:", error.response?.data || error.message);
+        throw error;
+    }
+};
 
 export default {
     postFood,
@@ -237,7 +252,8 @@ export default {
     submitReport,
     registerUser,
     getUser,
-    logoutUser
+    logoutUser,
+    getPosterNetId
  }
  
 
