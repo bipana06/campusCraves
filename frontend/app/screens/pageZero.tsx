@@ -9,7 +9,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { HelloWave } from "@/components/HelloWave";
 
-import { GOOGLE_CLIENT_ID, GOOGLE_WEB_CLIENT_ID, REDIRECT_URI } from '@env';
+
+const GOOGLE_CLIENT_ID = "556981446145-qa9vinqthj28lmv49of5ssor9im3pk1v.apps.googleusercontent.com";
+const GOOGLE_WEB_CLIENT_ID = "556981446145-qa9vinqthj28lmv49of5ssor9im3pk1v.apps.googleusercontent.com";
+const REDIRECT_URI = "http://localhost:8081/";
 
 
 // Complete the auth session
