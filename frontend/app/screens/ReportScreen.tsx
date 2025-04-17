@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect,useState } from "react";
 import { 
   View, 
   Text, 
@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { submitReport } from "../apiService";
-import { getGoogleId, getNetId, getPosterNetId  } from "../apiService";
+import { getGoogleId, getNetId, getPosterNetId, canReportPost  } from "../apiService";
+
 let googleId: string | null = null;
 let netId: string | null = null;
 let posterNetId: string | null = null;
@@ -33,30 +34,70 @@ initializeGlobalData();
 const ReportScreen = () => {
   const [reportMessage, setReportMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [canReport, setCanReport] = useState(true);
+  const [reasonMessage, setReasonMessage] = useState("");
   const router = useRouter();
   const params = useLocalSearchParams();
-  
+
   // Extract parameters from the route
   const { foodId, foodName } = params;
+  useEffect(() => {
+    const checkReportEligibility = async () => {
+      try {
+        const googleID = await getGoogleId();
+        const userNetId = await getNetId(googleID);
+        const { canReport, reason } = await canReportPost(foodId, userNetId);
+        setCanReport(canReport);
+        setReasonMessage(reason || "");
+      } catch (error) {
+        console.error("Error checking report eligibility:", error);
+        setCanReport(false);
+        setReasonMessage("Unable to verify report eligibility");
+      }
+    };
+
+    if (foodId) {
+      checkReportEligibility();
+    }
+  }, [foodId]);
     const handleSubmit = async () => {
-        if (!reportMessage.trim()) {
+
+      if (!reportMessage.trim()) {
         Alert.alert("Error", "Please provide a reason for your report");
         return;
+      }
+      
+      // Add validation for foodId
+      if (!foodId) {
+        Alert.alert("Error", "Missing food item information");
+        console.error("Missing foodId in report submission");
+        return;
+      }
+  
+      setIsSubmitting(true);
+  
+      try {
+        const googleID = await getGoogleId();
+        const user1Id = await getNetId(googleID);
+        
+        // Log the foodId before calling getPosterNetId
+        console.log("Getting poster NetID for foodId:", foodId);
+        const user2Id = await getPosterNetId(foodId);
+        
+        // More validation
+        if (!user2Id) {
+          throw new Error("Could not retrieve poster's information");
         }
-    
-        setIsSubmitting(true);
-    
-        try {
-        const googleID=await getGoogleId();
-        const user1Id = await getNetId(googleID); // Ensure userId is correctly retrieved
-        const user2Id=  await getPosterNetId(foodId); // change wuth poster id
+        
         console.log("Sending report with data:", {
-            foodId,
-            reportMessage,
-            user1Id,
+          foodId,
+          reportMessage,
+          user1Id,
+          user2Id
         });
-    
+  
         const response = await submitReport(foodId, reportMessage, user1Id, user2Id);
+            
         
         console.log("Report submission response:", response);
     
@@ -99,7 +140,7 @@ const ReportScreen = () => {
         />
         
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={styles.cancelButton} 
             onPress={() => router.back()}
             disabled={isSubmitting}
@@ -115,7 +156,22 @@ const ReportScreen = () => {
             <Text style={styles.submitButtonText}>
               {isSubmitting ? "Submitting..." : "Submit Report"}
             </Text>
+          </TouchableOpacity> */}
+          <TouchableOpacity 
+            style={[
+              styles.submitButton, 
+              !canReport && styles.disabledButton
+            ]} 
+            onPress={handleSubmit}
+            disabled={isSubmitting || !canReport}
+          >
+            <Text style={styles.submitButtonText}>
+              {isSubmitting ? "Submitting..." : "Submit Report"}
+            </Text>
           </TouchableOpacity>
+          {!canReport && reasonMessage && (
+            <Text style={styles.errorMessage}>{reasonMessage}</Text>
+          )}
         </View>
       </View>
     </ScrollView>
@@ -203,6 +259,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+    opacity: 0.7,
+  },
+  errorMessage: {
+    color: '#d32f2f',
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
 

@@ -9,8 +9,6 @@ import { getFoodItems, reserveFood, searchFoodItems, completeTransaction,getGoog
 import { useRouter } from "expo-router";
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-
-
 const Tab = createMaterialTopTabNavigator();
 
 const MarketPlaceScreen = () => {
@@ -173,15 +171,16 @@ const renderItem = ({ item }: { item: FoodItem }) => {
             alert("Failed to reserve food. Please try again.");
         }
     };
-    
+
     const handleReport = () => {
-        router.push({
-            pathname: "../ReportScreen",
-            params: { 
-                foodId: item.id, 
-                foodName: item.foodName 
-            }
-        });
+        try {
+            router.push({
+                pathname: '../ReportScreen',
+                params: { foodId: item.id, foodName: item.foodName }
+            });
+        } catch (error) {
+            console.error('Report navigation error:', error);
+        }
     };
 
     // Determine if the button should be disabled
@@ -210,6 +209,7 @@ const renderItem = ({ item }: { item: FoodItem }) => {
                     disabled={isReserved} // Disable the button if the item is reserved
                     color={isReserved ? "gray" : "blue"} // Change the button color if disabled
                 />
+
                  <TouchableOpacity 
                     style={styles.reportButton}
                     onPress={handleReport}
@@ -552,6 +552,7 @@ const MyPostsTab = () => {
                        <Text style={styles.detail}>Report Count: {item.reportCount}</Text>
                        <Text style={styles.detail}>Created At: {formatDateTime(item.createdAt)}</Text>
                        <Text style={styles.detail}>Expiration Time: {formatDateTime(item.expirationTime)}</Text>
+
     
     
                        {isReserved && !isCompleted && (
@@ -564,6 +565,8 @@ const MyPostsTab = () => {
                                        Complete Transaction
                                    </Text>
                                </TouchableOpacity>
+
+
                               
                            </>
                        )}
@@ -574,6 +577,25 @@ const MyPostsTab = () => {
                                Transaction Completed
                            </Text>
                        )}
+                        <TouchableOpacity
+                            style={styles.reportButton}
+                            onPress={() => {
+                                const foodId = item._id || item.id;
+                                if (!foodId) {
+                                    console.error("No valid ID found in item:", item);
+                                    return;
+                                }
+                                router.push({
+                                    pathname: '../ReportScreen',
+                                    params: { 
+                                        foodId: foodId,
+                                        foodName: item.foodName 
+                                    }
+                                });
+                            }}
+                        >
+                            <Text style={styles.reportButtonText}>Report</Text>
+                        </TouchableOpacity>
                    </View>
                </View>
            );

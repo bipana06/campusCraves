@@ -32,9 +32,12 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="screens/FoodPostScreen" options={{ title: "Post Food" }} />
+        <Stack.Screen name="screens/ReportScreen" options={{ title: "Report Item" }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+    
   );
 }
+
