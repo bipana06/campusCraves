@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, Button, TextInput,
     Modal,
@@ -50,7 +48,6 @@ interface FoodItem {
    reservedBy: string;
 }
 
-
 const MarketplaceTab = () => {
     const router = useRouter();
     const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
@@ -63,22 +60,44 @@ const MarketplaceTab = () => {
     const [isFiltering, setIsFiltering] = useState(false);
 
 
+//    useEffect(() => {
+//     const fetchFoodItems = async () => {
+//         try {
+//             const data = await getFoodItems();
+//             const filteredData = filterExpiredItems(data); // Remove expired items
+//             setFoodItems(filteredData);
+//         } catch (error) {
+//             console.error("Failed to fetch food items:", error);
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
 
-   useEffect(() => {
-    const fetchFoodItems = async () => {
-        try {
-            const data = await getFoodItems();
-            const filteredData = filterExpiredItems(data); // Remove expired items
-            setFoodItems(filteredData);
-        } catch (error) {
-            console.error("Failed to fetch food items:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+//     fetchFoodItems();
+//    }, []);
 
-    fetchFoodItems();
-   }, []);
+// sorting the food items by createdAt
+    useEffect(() => {
+        const fetchFoodItems = async () => {
+            try {
+                const data = await getFoodItems();
+                const filteredData = filterExpiredItems(data); // Remove expired items
+
+                // Sort the filtered data by createdAt (newest first)
+                const sortedData = filteredData.sort(
+                    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+
+                setFoodItems(sortedData);
+            } catch (error) {
+                console.error("Failed to fetch food items:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFoodItems();
+    }, []);
 
 
    const getStatusStyle = (status?: string) => {

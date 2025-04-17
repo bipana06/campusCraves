@@ -246,8 +246,8 @@ export const logoutUser = async () => {
 };
 export const canReportPost = async (postId, userId) => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/report/can-report/${postId}/${userId}`);
-      return response.data;
+        const response = await axios.get(`https://campuscraves.onrender.com/api/report/can-report/${postId}/${userId}`);
+        return response.data;
     } catch (error) {
       console.error("Error checking report eligibility:", error);
       throw error;
