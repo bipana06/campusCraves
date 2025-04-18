@@ -175,6 +175,7 @@ const renderItem = ({ item }: { item: FoodItem }) => {
         try {
             const user = netId; // Replace with the actual logged-in user's identifier
             const response = await reserveFood(item.id, user);
+            alert(`Reservation successful! Please pick up the food from ${item.pickupLocation} before ${formatDateTime(item.expirationTime)}`);
             console.log("Reservation successful:", response);
 
             // Update the UI to reflect the new status
