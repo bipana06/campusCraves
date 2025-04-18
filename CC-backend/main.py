@@ -11,16 +11,25 @@ from fastapi import Body
 load_dotenv()
 from datetime import datetime
 from typing import List, Optional
+import hashlib
+from pydantic import ValidationError
 
 app = FastAPI()
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Helper function to check the password hash
+def verify_password(stored_password: str, provided_password: str) -> bool:
+    return stored_password == hash_password(provided_password)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8081"], 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 client = MongoClient(os.getenv("MONGO_URI"), tls=True, tlsAllowInvalidCertificates=True)
 db = client.food_db
@@ -30,7 +39,35 @@ report_collection = db.reports
 # Create a users collection
 users_collection = db.users  # Add this near your food_collection definition
 
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    netId: str
+    googleId:str
+    fullName: str
+    phoneNumber: Optional[str] = None
+    picture: Optional[str] = None
+    class Config:
+        schema_extra = {
+            "example": {
+                "username": "johndoe",
+                "email": "john@example.com",
+                "password": "secretpassword",
+                "netId": "jd123",
+                "googleId": "jd123",
+                "fullName": "John Doe",
+                "phoneNumber": "1234567890",
+                "picture": "https://example.com/picture.jpg"
+            }
+        }
 
+
+# Model used to capture login credentials for logging in of an existing user
+
+class UserEmailLogin(BaseModel):
+    email: str
+    password: str
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -97,7 +134,131 @@ async def post_food(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+class EmailCheckRequest(BaseModel):
+    email: str
+@app.post("/check-email")
+async def check_email(data: EmailCheckRequest):
+    user = await users_collection.find_one({"email": user.email})
+    return {"exists": bool(user)}
+@app.post("/api/users/check-email")
+async def check_email(data: EmailCheckRequest):
+    user = users_collection.find_one({"email": data.email})
+    return {"exists": bool(user)}
 
+@app.post("/api/users/signup")
+async def signup(user: UserCreate):
+    try:
+        # Hash the user's password for security
+        
+        hashed_password = hash_password(user.password)
+
+        # Check if the email already exists
+        existing_user = users_collection.find_one({"email": user.email})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered. Please log in, or sign up with a new Email")
+
+        # Check if the username already exists
+        existing_user = users_collection.find_one({"username": user.username})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already exists")
+            
+        # Check if the netId already exists
+        existing_user = users_collection.find_one({"netId": user.netId})
+        if existing_user:
+            raise HTTPException(status_code=409, detail="This Net ID is already registered")
+
+        # Create the user document
+        new_user = {
+            "username": user.username,
+            "email": user.email,
+            "password": hashed_password,
+            "netId": user.netId,
+            "googleId": user.netId,  # Populate googleId with netId for backward compatibility
+            "fullName": user.fullName,
+            "phoneNumber": user.phoneNumber,
+            "picture": user.picture,
+            "createdAt": datetime.now(),
+            "role": "user",
+            "postCount": 0,
+            "reservationCount": 0
+        }
+
+        # Insert the new user into the database
+        result = users_collection.insert_one(new_user)
+        print("Received user data:", user.dict())
+        if result.inserted_id:
+            return {"success": True, "message": "User registered successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to register user")
+            
+    except HTTPException as he:
+        raise he
+    except ValidationError as ve:
+        print("Validation error:", str(ve))
+        raise HTTPException(status_code=422, detail=str(ve))
+    except Exception as e:
+        print("Error during signup:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+    
+# Add this class for email login
+class UserEmailLogin(BaseModel):
+    email: str
+    password: str
+
+@app.post("/api/users/email-login")
+async def email_login(user: UserEmailLogin):
+    try:
+        # Find the user by email instead of username
+        db_user = users_collection.find_one({"email": user.email})
+        
+        if not db_user:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Verify the password
+        if not verify_password(db_user["password"], user.password):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Update last login time
+        users_collection.update_one(
+            {"_id": db_user["_id"]},
+            {"$set": {"lastLogin": datetime.now()}}
+        )
+        
+        # Return user information (excluding password)
+        user_response = {k: v for k, v in db_user.items() if k != "password"}
+        user_response["_id"] = str(user_response["_id"])  # Convert ObjectId to string
+        
+        return {
+            "success": True, 
+            "message": "Login successful",
+            "user": user_response
+        }
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/api/users/auth-check")
+async def auth_check(user: UserEmailLogin):
+    try:
+        # Find the user by username
+        db_user = users_collection.find_one({"username": user.username})
+        
+        if not db_user or not verify_password(db_user["password"], user.password):
+            return JSONResponse(status_code=401, content={"message": "Invalid credentials"})
+
+        # Convert ObjectId to string for JSON serialization
+        user_response = {k: v for k, v in db_user.items() if k != "password"}
+        user_response["_id"] = str(user_response["_id"])
+        
+        return {
+            "success": True,
+            "user": user_response
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+       
 @app.get("/api/food")
 async def get_food():
     try:
@@ -333,61 +494,6 @@ async def search_food(
       return {"food_posts": food_posts}
   except Exception as e:
       raise HTTPException(status_code=500, detail=str(e))
-# User model for registration
-class UserRegistration(BaseModel):
-    googleId: str
-    email: str
-    netId: str
-    fullName: str
-    phoneNumber: Optional[str] = None
-    picture: Optional[str] = None
-
-@app.post("/api/users/register")
-async def register_user(user: UserRegistration):
-    try:
-        # Check if user with this googleId exists
-        existing_user = users_collection.find_one({"googleId": user.googleId})
-        
-        if existing_user:
-            # Update existing user
-            users_collection.update_one(
-                {"googleId": user.googleId},
-                {"$set": {
-                    "netId": user.netId,
-                    "fullName": user.fullName,
-                    "phoneNumber": user.phoneNumber,
-                    "picture": user.picture,
-                    "updatedAt": datetime.now()
-                }}
-            )
-            return {"success": True, "message": "User updated successfully"}
-        
-        # Check if user with this netId exists
-        netid_exists = users_collection.find_one({"netId": user.netId})
-        if netid_exists:
-            raise HTTPException(status_code=409, detail="This Net ID is already registered")
-        
-        # Create new user
-        user_data = user.dict()
-        user_data["createdAt"] = datetime.now()
-        user_data["role"] = "user"  # Default role
-        user_data["postCount"] = 0
-        user_data["reservationCount"] = 0
-        
-        result = users_collection.insert_one(user_data)
-        
-        if result.inserted_id:
-            return {
-                "success": True,
-                "message": "User registered successfully"
-            }
-        else:
-            raise HTTPException(status_code=500, detail="Failed to register user")
-            
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 # Get user by googleId
 @app.get("/api/users/{googleId}")
 async def get_user(googleId: str):

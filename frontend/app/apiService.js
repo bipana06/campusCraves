@@ -113,32 +113,101 @@ export const searchFoodItems = async (filters) => {
     }
  };
 
-// New user-related functions
+// // New user-related functions
+// export const registerUser = async (userData) => {
+//     try {
+//         console.log("Registering user:", userData);
+        
+//         // The backend expects a JSON body for user registration
+//         const response = await axios.post(`${USER_API_URL}/register`, userData, {
+//             headers: { "Content-Type": "application/json" },
+//         });
+        
+//         console.log("User registration response:", response.data);
+//         return response.data;
+//     } catch (error) {
+//         console.error("Error registering user:", error);
+//         throw error;
+//     }
+// };
 export const registerUser = async (userData) => {
     try {
         console.log("Registering user:", userData);
-        
-        // The backend expects a JSON body for user registration
-        const response = await axios.post(`${USER_API_URL}/register`, userData, {
-            headers: { "Content-Type": "application/json" },
+
+        // Create a clean object with exactly the fields needed
+        const dataToSend = {
+            username: userData.username,
+            email: userData.email,
+            password: userData.password,
+            netId: userData.netId,
+            googleId: userData.netId, // Use netId as googleId
+            fullName: userData.fullName,
+            phoneNumber: userData.phoneNumber || null,
+            picture: userData.picture || null
+        };
+
+        console.log("Sending data to server:", JSON.stringify(dataToSend, null, 2));
+
+        // Use axios directly with the JSON data
+        const response = await axios({
+            method: 'post',
+            url: `${USER_API_URL}/signup`,
+            data: dataToSend,
+            headers: { 'Content-Type': 'application/json' }
         });
-        
+
         console.log("User registration response:", response.data);
         return response.data;
     } catch (error) {
+        // Enhanced error logging
         console.error("Error registering user:", error);
+        if (error.response) {
+            console.error("Error details:", error.response.data);
+            console.error("Status code:", error.response.status);
+        }
         throw error;
     }
 };
 
-export const getUser = async (googleId) => {
-    try {
-        if (!googleId) {
-            throw new Error("Google ID is required to fetch user data");
-        }
+
+// export const getUser = async (googleId) => {
+//     try {
+//         if (!googleId) {
+//             throw new Error("Google ID is required to fetch user data");
+//         }
         
-        console.log("Fetching user with Google ID:", googleId);
-        const response = await axios.get(`${USER_API_URL}/${googleId}`);
+//         console.log("Fetching user with Google ID:", googleId);
+//         const response = await axios.get(`${USER_API_URL}/${googleId}`);
+//         console.log("User data retrieved:", response.data);
+//         return response.data;
+//     } catch (error) {
+//         console.error("Error fetching user:", error);
+//         throw error;
+//     }
+// };
+
+// export const getNetId = async (googleId) => {
+//     try {
+//         if (!googleId) {
+//             throw new Error("Google ID is required to fetch Net ID");
+//         }
+
+//         console.log("Fetching Net ID for Google ID:", googleId);
+//         const response = await axios.get(`${USER_API_URL}/netid/${googleId}`); // Use path parameter
+//         console.log("Net ID retrieved:", response.data.netId);
+//         return response.data.netId;
+//     } catch (error) {
+//         console.error("Error fetching Net ID:", error.response?.data || error.message);
+//         throw error;
+//     }
+// };
+
+export const getUser = async (netId) => {
+    try {
+        if (!netId) throw new Error("Net ID is required to fetch user data");
+        
+        console.log("Fetching user with Net ID:", netId);
+        const response = await axios.get(`${USER_API_URL}/${netId}`);
         console.log("User data retrieved:", response.data);
         return response.data;
     } catch (error) {
@@ -147,14 +216,12 @@ export const getUser = async (googleId) => {
     }
 };
 
-export const getNetId = async (googleId) => {
+export const getNetId = async (netId) => {
     try {
-        if (!googleId) {
-            throw new Error("Google ID is required to fetch Net ID");
-        }
+        if (!netId) throw new Error("Net ID is required to fetch Net ID");
 
-        console.log("Fetching Net ID for Google ID:", googleId);
-        const response = await axios.get(`${USER_API_URL}/netid/${googleId}`); // Use path parameter
+        console.log("Fetching Net ID for:", netId);
+        const response = await axios.get(`${USER_API_URL}/netid/${netId}`);
         console.log("Net ID retrieved:", response.data.netId);
         return response.data.netId;
     } catch (error) {
@@ -162,6 +229,7 @@ export const getNetId = async (googleId) => {
         throw error;
     }
 };
+
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -246,7 +314,7 @@ export const logoutUser = async () => {
 };
 export const canReportPost = async (postId, userId) => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/report/can-report/${postId}/${userId}`);
+      const response = await axios.get('https://campuscraves.onrender.com/api/report/can-report/${postId}/${userId}`);
       return response.data;
     } catch (error) {
       console.error("Error checking report eligibility:", error);
