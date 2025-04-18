@@ -314,7 +314,7 @@ export const logoutUser = async () => {
 };
 export const canReportPost = async (postId, userId) => {
     try {
-      const response = await axios.get('https://campuscraves.onrender.com/api/report/can-report/${postId}/${userId}`);
+        const response = await axios.get(`${API_framework}api/report/can-report/${postId}/${userId}`);
       return response.data;
 
     } catch (error) {

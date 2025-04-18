@@ -63,6 +63,7 @@ const ReportScreen = () => {
     const handleSubmit = async () => {
 
       if (!reportMessage.trim()) {
+        window.alert("Please provide a reason for your report");
         Alert.alert("Error", "Please provide a reason for your report");
         return;
       }
@@ -100,6 +101,7 @@ const ReportScreen = () => {
             
         
         console.log("Report submission response:", response);
+        window.alert("Report Submitted. Thank you for your report. Our team will review it shortly.");
     
         Alert.alert(
             "Report Submitted",
@@ -166,7 +168,7 @@ const ReportScreen = () => {
             disabled={isSubmitting || !canReport}
           >
             <Text style={styles.submitButtonText}>
-              {isSubmitting ? "Submitting..." : "Submit Report"}
+              {isSubmitting ? "Submitted" : "Submit Report"}
             </Text>
           </TouchableOpacity>
           {!canReport && reasonMessage && (
