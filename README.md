@@ -44,7 +44,7 @@ CampusCraves is a platform designed to facilitate food sharing within a campus c
    npx expo start
    ```
 
-### Backend Setup
+### Backend Setup [Not necessary if you do not want to run it locally, we have our backend deployed on Render] To run the backend locally;
 1. Navigate to the backend directory:
    ```bash
    cd CC-backend

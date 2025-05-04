@@ -1,8 +1,10 @@
 import axios from "axios";
 import { Alert } from "react-native";
 
-// const API_URL = "http://127.0.0.1:10000/api/food"; 
-// const USER_API_URL = "http://127.0.0.1:10000/api/users";
+// const API_URL = "http://127.0.0.1:8000/api/food"; 
+// const USER_API_URL = "http://127.0.0.1:8000/api/users";
+// const API_framework = "http://127.0.1:8000/"
+
 const API_URL = "https://campuscraves.onrender.com/api/food"; 
 const USER_API_URL = "https://campuscraves.onrender.com/api/users";
 const API_framework = "https://campuscraves.onrender.com/"
