@@ -365,7 +365,7 @@ export default function PageZero() {
     >
       <ThemedView style={styles.container}>
         <ThemedText type="title" style={styles.title}>
-          Welcome to <Text style={styles.italic}>campusCraves</Text>!
+          Welcome to campusCraves!
         </ThemedText>
         <ThemedText type="subtitle" style={styles.subtitle}>
           Share. Discover. Enjoy.
@@ -374,12 +374,15 @@ export default function PageZero() {
           Join a community where students share food, discover hidden gems on
           campus, and reduce waste together.
         </ThemedText>
+        <ThemedText style={[styles.description, styles.italic]}>
+          Enter your email to get started!
+        </ThemedText>
 
         <View style={styles.stepContainer}>
           {step === "email" && (
             <>
               <TextInput
-                placeholder="Enter your email"
+                placeholder="e.g. abc@gmail.com"
                 value={email}
                 onChangeText={setEmail}
                 style={styles.input}
@@ -423,6 +426,8 @@ export default function PageZero() {
         </View>
       </ThemedView>
     </ParallaxScrollView>
+    
+
   );
 }
 
@@ -437,13 +442,18 @@ const styles = StyleSheet.create({
     width: 300,
     alignSelf: "center",
     resizeMode: "contain",
-    marginTop: 20,
+    marginTop: 40,
   },
   stepContainer: {
-    gap: 8,
-    marginTop: 20,
+    gap: 10,
+    marginTop: 2,
     alignItems: "center",
     width: "100%",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginVertical: 15,
+    justifyContent: "center",
   },
   input: {
     borderColor: "#ccc",
@@ -453,7 +463,7 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 15,
     fontSize: 16,
-    backgroundColor: "white",
+    backgroundColor: "#FDF8EF"
   },
   buttonContainer: {
     backgroundColor: "#85A947",
@@ -463,6 +473,7 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     alignItems: "center",
     justifyContent: "center",
+    width: "100%",
   },
   buttonText: {
     color: "#EFE3C2",
@@ -473,17 +484,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 30,
+    marginTop: 0,
   },
   title: {
-    fontSize: 50,
+    fontSize: 40,
     fontWeight: "bold",
     textAlign: "center",
     color: "#3E7B27",
-    marginTop: 20,
+    marginTop: 0,
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 28,
+    fontSize: 25,
     fontWeight: "700",
     textAlign: "center",
     marginTop: 10,
@@ -491,7 +503,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   description: {
-    fontSize: 20,
+    fontSize: 17,
     textAlign: "center",
     marginTop: 15,
     color: "#EFE3C2",
@@ -503,5 +515,7 @@ const styles = StyleSheet.create({
   },
   italic: {
     fontStyle: "italic",
+    fontSize: 16,
+    color: "#3E7B27",
   },
 });

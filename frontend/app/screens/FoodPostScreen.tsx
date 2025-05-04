@@ -120,11 +120,11 @@ const FoodPostScreen = () => {
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <Text style={styles.backButtonText}>← Back</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>🍱 Share Your Food</Text>
+            <Text style={styles.title}>🍱 NEW POST 🍱 </Text>
             </View>
-            <Text style={styles.title}>🍱 Share Your Food</Text>
+            <Text style={styles.title}>Please fill in the following details!</Text>
 
-            <Text style={styles.label}>Food Name</Text>
+            <Text style={styles.label}>Food Name *</Text>
             <TextInput
                 style={[styles.input, errors.foodName && styles.errorInput]}
                 value={foodName}
@@ -136,7 +136,7 @@ const FoodPostScreen = () => {
             />
             {errors.foodName && <Text style={styles.errorText}>{errors.foodName}</Text>}
 
-            <Text style={styles.label}>Quantity</Text>
+            <Text style={styles.label}>Quantity *</Text>
             <TextInput
                 style={[styles.input, errors.quantity && styles.errorInput]}
                 value={quantity}
@@ -149,7 +149,7 @@ const FoodPostScreen = () => {
             />
             {errors.quantity && <Text style={styles.errorText}>{errors.quantity}</Text>}
 
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>Category *</Text>
             <View style={styles.pickerWrapper}>
                 <Picker selectedValue={category} onValueChange={setCategory}>
                     <Picker.Item label="Snacks" value="snacks" />
@@ -158,7 +158,7 @@ const FoodPostScreen = () => {
                 </Picker>
             </View>
 
-            <Text style={styles.label}>Dietary Info (Optional)</Text>
+            <Text style={styles.label}>Dietary Info</Text>
             <TextInput
                 style={styles.input}
                 value={dietaryInfo}
@@ -166,7 +166,7 @@ const FoodPostScreen = () => {
                 placeholder="e.g. Vegan, Gluten-free"
             />
 
-            <Text style={styles.label}>Pickup Location</Text>
+            <Text style={styles.label}>Pickup Location *</Text>
             <TextInput
                 style={[styles.input, errors.pickupLocation && styles.errorInput]}
                 value={pickupLocation}
@@ -178,7 +178,7 @@ const FoodPostScreen = () => {
             />
             {errors.pickupLocation && <Text style={styles.errorText}>{errors.pickupLocation}</Text>}
 
-            <Text style={styles.label}>Pickup Time</Text>
+            <Text style={styles.label}>Pickup Time *</Text>
             <DatePicker
                 selected={pickupTime}
                 onChange={setPickupTime}
@@ -191,7 +191,7 @@ const FoodPostScreen = () => {
             />
             {errors.pickupTime && <Text style={styles.errorText}>{errors.pickupTime}</Text>}
 
-            <Text style={styles.label}>Expiration Time</Text>
+            <Text style={styles.label}>Expiration Time *</Text>
             <DatePicker
                 selected={expirationTime}
                 onChange={setExpirationTime}
@@ -204,81 +204,110 @@ const FoodPostScreen = () => {
             />
             {errors.expirationTime && <Text style={styles.errorText}>{errors.expirationTime}</Text>}
 
-            <Button title="Pick an Image (jpg/png, <1MB)" onPress={pickImage} />
+            <TouchableOpacity onPress={pickImage} style={[styles.buttonContainer, styles.pickImageButton]}>
+                <Text style={styles.buttonText}>Pick an Image (&lt;1MB) *</Text>
+            </TouchableOpacity>
             {errors.photo && <Text style={styles.errorText}>{errors.photo}</Text>}
             {photo && <Image source={{ uri: photo.uri }} style={styles.image} />}
 
-            <View style={styles.submitBtn}>
-                <Button title="Submit Post" onPress={handleSubmit} color="#4CAF50" />
-            </View>
+            <TouchableOpacity onPress={handleSubmit} style={[styles.buttonContainer]}>
+                <Text style={styles.buttonText}>Submit Post</Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 };
 
+
 const styles = StyleSheet.create({
     container: {
+        flexGrow: 1,
         padding: 20,
-        backgroundColor: "#f8f8f8",
+        backgroundColor: "#F2F4F7",
     },
     header: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        marginBottom: 20,
+        marginBottom: 16,
     },
     backButton: {
-        padding: 10,
-        backgroundColor: "#ddd",
-        borderRadius: 5,
+        padding: 8,
+        backgroundColor: "#EFE3C2",
+        borderRadius: 8,
     },
     backButtonText: {
         color: "#333",
-        fontWeight: "bold",
+        fontSize: 14,
+        fontWeight: "600",
     },
     title: {
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 20,
+        fontSize: 20,
+        fontWeight: "700",
         textAlign: "center",
-        color: "#333",
+        color: "#123524",
+        marginBottom: 24, 
     },
+    
     label: {
-        marginTop: 10,
-        marginBottom: 5,
-        fontWeight: "bold",
-        color: "#333",
+        marginTop: 12,
+        marginBottom: 6,
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#123524",
     },
     input: {
         borderWidth: 1,
-        borderColor: "#ccc",
+        borderColor: "#5F6F65",
         borderRadius: 8,
-        padding: 10,
-        backgroundColor: "#fff",
+        padding: 12,
+        backgroundColor: "#FFF",
+        fontSize: 14,
+        color: "#5F6F65",
+        marginBottom: 16,
     },
     errorInput: {
-        borderColor: "#ff4d4d",
+        borderColor: "#EF4444",
     },
     errorText: {
-        color: "#ff4d4d",
-        marginBottom: 5,
+        color: "#EF4444",
+        fontSize: 12,
+        marginTop: 2,
     },
     pickerWrapper: {
-        borderWidth: 1,
-        borderColor: "#ccc",
+        backgroundColor: "#FFF",
+        marginBottom: 10, 
         borderRadius: 8,
-        backgroundColor: "#fff",
-        marginBottom: 10,
+        borderColor: "#5F6F65",
     },
     image: {
         width: "100%",
-        height: 200,
-        marginTop: 10,
+        height: 180,
+        marginTop: 12,
+        borderRadius: 10,
+        resizeMode: "cover",
+    },
+
+    pickImageButton: {
+        backgroundColor: "#27548A",
+    },
+    buttonContainer: {
+        backgroundColor: "#3E7B27",
+        paddingVertical: 12,
+        paddingHorizontal: 24,
         borderRadius: 8,
-    },
-    submitBtn: {
-        marginTop: 20,
-    },
+        marginVertical: 20,
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+      },
+      buttonText: {
+        color: "#EFE3C2",
+        fontSize: 18,
+        fontWeight: "bold",
+      },
+    
 });
+
 
 export default function ProtectedFoodPostScreen() {
     return (
