@@ -915,6 +915,7 @@ const MarketplaceTab = () => {
                 pickupLocation: pickupLocationFilter || undefined,
                 pickupTime: pickupTimeFilter || undefined,
             });
+            console.log("Search API Response:", filteredItems); 
             const nonExpiredItems = filterExpiredItems(filteredItems);
             const sortedData = nonExpiredItems.sort( // Sort filtered results too
                  (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -991,16 +992,21 @@ const MarketplaceTab = () => {
         return (
             <View style={styles.card}>
                 <View>
-                     <Image
-                        source={{ uri: item.photo || 'https://via.placeholder.com/300x150.png?text=No+Image' }} // Basic placeholder
-                        style={styles.cardImage}
-                        resizeMode="cover" // Ensure image covers the area
-                    />
-                    {item.category ? (
+                <Image
+                    source={{
+                        uri: item.photo?.startsWith('data:image') // Check if it starts with a data URI
+                            ? item.photo
+                            : (item.photo ? JSON.parse(item.photo)?.uri : null) || 'https://via.placeholder.com/300x150.png?text=No+Image',
+                    }}
+                    style={styles.cardImage}
+                    resizeMode="cover"
+                />
+                {item.category ? (
                         <View style={styles.categoryTagContainer}>
                              <Text style={styles.categoryTagText}>{item.category}</Text>
-                        </View>
-                    ) : null}
+                         </View>
+                     ) : null}
+
                  </View>
 
                 <View style={styles.cardContent}>

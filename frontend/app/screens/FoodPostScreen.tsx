@@ -60,11 +60,50 @@ const FoodPostScreen = () => {
         return Object.keys(tempErrors).length === 0;
     };
 
+    // const pickImage = () => {
+    //     ImagePicker.launchImageLibrary({ mediaType: "photo" }, (response) => {
+    //         if (response.assets && response.assets.length > 0) {
+    //             const selectedPhoto = response.assets[0];
+    //             if (selectedPhoto.uri) {
+    //                 setPhoto({
+    //                     uri: selectedPhoto.uri,
+    //                     type: selectedPhoto.type || "image/jpeg",
+    //                     name: selectedPhoto.fileName || selectedPhoto.uri.split("/").pop(),
+    //                 });
+    //                 setErrors(prev => ({ ...prev, photo: "" }));
+    //             }
+    //         }
+    //     });
+    // };
     const pickImage = () => {
         ImagePicker.launchImageLibrary({ mediaType: "photo" }, (response) => {
             if (response.assets && response.assets.length > 0) {
                 const selectedPhoto = response.assets[0];
                 if (selectedPhoto.uri) {
+                    let tempErrors = {...errors};
+                    console.log("Selected photo:", selectedPhoto);
+                    // Size validation
+                    if (selectedPhoto.uri.startsWith('data:')) {
+                        const base64Data = selectedPhoto.uri.substring(selectedPhoto.uri.indexOf(',') + 1);
+                        const fileSize = Math.ceil(base64Data.length * 3 / 4);
+                        
+                        if (fileSize > 1024 * 1024) {
+                            setErrors(prev => ({ ...prev, photo: "Image size exceeds 1MB. Please select a smaller image." }));
+                            return;
+                        }
+                    }
+
+                    
+                    // Format validation
+                    if (!(selectedPhoto.uri.includes("image/jpeg") || 
+                          selectedPhoto.uri.includes("image/jpg") || 
+                          selectedPhoto.uri.includes("image/png"))) {
+                        tempErrors.photo = "Invalid image format. Please select a JPEG or PNG image.";
+                        setErrors(tempErrors); // Updating the state
+                        return;
+                    }
+                    
+                    // All checks passed
                     setPhoto({
                         uri: selectedPhoto.uri,
                         type: selectedPhoto.type || "image/jpeg",
@@ -75,6 +114,7 @@ const FoodPostScreen = () => {
             }
         });
     };
+    
 
     const handleSubmit = async () => {
         if (!validateInputs()) return;
@@ -107,9 +147,18 @@ const FoodPostScreen = () => {
         try {
             const response = await postFood(foodData);
             Alert.alert("Success", response.message);
-        } catch (error) {
-            Alert.alert("Error", "Failed to post food.");
         }
+        catch (error) {
+            console.error("Upload error:", error);
+            Alert.alert(
+                "Error", 
+                "Failed to post food."
+            );
+        }
+        
+        // catch (error) {
+        //     Alert.alert("Error", "Failed to post food.");
+        // }
     };
 
     return (

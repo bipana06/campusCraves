@@ -272,6 +272,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { submitReport } from "../apiService";
 import { getGoogleId, getNetId, getPosterNetId, canReportPost } from "../apiService";
 
+
 let googleId: string | null = null;
 let netId: string | null = null;
 
@@ -288,6 +289,7 @@ const ReportScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [canReport, setCanReport] = useState(true);
   const [reasonMessage, setReasonMessage] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const router = useRouter();
   const params = useLocalSearchParams();
 
@@ -350,7 +352,7 @@ const ReportScreen = () => {
       
       window.alert("Report Submitted. Thank you for your report. Our team will review it shortly.");
       setIsSubmitting(false);
-
+      setIsSubmitted(true); // Set this before alert
       Alert.alert(
         "Report Submitted",
         "Thank you for your report. Our team will review it shortly.",
@@ -361,7 +363,9 @@ const ReportScreen = () => {
           }
         ]
       );
-    } catch (error) {
+    } 
+
+      catch (error) {
       let errorMessage = "Failed to submit report. Please try again later.";
       
       if (error instanceof Error && error.message.includes("already reported")) {
@@ -408,13 +412,25 @@ const ReportScreen = () => {
         />
         
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={[
               styles.submitButton, 
               (!canReport || isSubmitting) && styles.disabledButton
             ]} 
             onPress={handleSubmit}
             disabled={isSubmitting || !canReport}
+          >
+            <Text style={styles.submitButtonText}>
+              {isSubmitting ? "Submitting..." : "Submit Report"}
+            </Text>
+          </TouchableOpacity> */}
+          <TouchableOpacity 
+            style={[
+              styles.submitButton, 
+              (!canReport || isSubmitting || isSubmitted) && styles.disabledButton
+            ]} 
+            onPress={handleSubmit}
+            disabled={isSubmitting || !canReport || isSubmitted}
           >
             <Text style={styles.submitButtonText}>
               {isSubmitting ? "Submitting..." : "Submit Report"}
