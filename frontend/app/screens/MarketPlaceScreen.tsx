@@ -1330,26 +1330,29 @@ const MyReservationsTab = () => {
 
      }, [netId]); 
 
-     const handleCompleteTransaction = async (item: FoodItem) => {
-         if (!netId) {
-             alert("User information not available.");
-             return;
-         }
+     
+const handleCompleteTransaction = async (item: FoodItem) => {
+    if (!netId) {
+        alert("User information not available.");
+        return;
+    }
 
-         const confirmPickup = confirm("Mark this item as picked up?");
-         if (confirmPickup) {
-             handleCompleteTransaction(item);
-         }
-         try {
-            await completeTransaction(item.id, netId); 
-            alert("Transaction completed successfully!");
-            setReservedItems(prevItems => prevItems.filter(i => i.id !== item.id));
-        } catch (error) {
-            console.error("Failed to complete transaction:", error);
-             const errorMessage = error instanceof Error ? error.message : "Please try again.";
-             alert(`Failed to complete transaction: ${errorMessage}`);
-        }
-    };
+    const confirmPickup = confirm("Mark this item as picked up?");
+    if (!confirmPickup) {
+        return; // Exit if the user cancels the confirmation
+    }
+
+    try {
+        await completeTransaction(item.id, netId);
+        alert("Transaction completed successfully!");
+        setReservedItems(prevItems => prevItems.filter(i => i.id !== item.id));
+    } catch (error) {
+        console.error("Failed to complete transaction:", error);
+        const errorMessage = error instanceof Error ? error.message : "Please try again.";
+        alert(`Failed to complete transaction: ${errorMessage}`);
+    }
+};
+
 
      const handleReport = (item: FoodItem) => { 
         const foodIdentifier = item._id || item.id;
