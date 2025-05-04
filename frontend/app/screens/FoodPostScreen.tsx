@@ -88,7 +88,7 @@ const FoodPostScreen = () => {
                         const fileSize = Math.ceil(base64Data.length * 3 / 4);
                         
                         if (fileSize > 1024 * 1024) {
-                            setErrors(prev => ({ ...prev, photo: "Image size exceeds 1MB. Please select a smaller image." }));
+                            setErrors(prev => ({ ...prev, photo: "Image size exceeds 800 KB. Please select a smaller image." }));
                             return;
                         }
                     }
@@ -254,7 +254,7 @@ const FoodPostScreen = () => {
             {errors.expirationTime && <Text style={styles.errorText}>{errors.expirationTime}</Text>}
 
             <TouchableOpacity onPress={pickImage} style={[styles.buttonContainer, styles.pickImageButton]}>
-                <Text style={styles.buttonText}>Pick an Image (&lt;1MB) *</Text>
+                <Text style={styles.buttonText}>Pick an Image (&lt;800 KB) *</Text>
             </TouchableOpacity>
             {errors.photo && <Text style={styles.errorText}>{errors.photo}</Text>}
             {photo && <Image source={{ uri: photo.uri }} style={styles.image} />}
