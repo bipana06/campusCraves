@@ -67,8 +67,8 @@ async def submit_report(
         # Use the ReportCreate model potentially (adjust if needed)
         report_data = {
             "postId": postId, # Store the string version as in original
-            "user1ID": user1Id,
-            "user2ID": user2Id,
+            "user1ID": str(user1Id),
+            "user2ID": str(user2Id),
             "message": message,
             "isSubmitted": True,
             "submittedAt": datetime.now(),
@@ -119,10 +119,14 @@ async def get_reports(db: Collection = Depends(get_report_db)):
         reports_list = []
         for report in reports_cursor:
             report["id"] = str(report.pop("_id"))
-            # Pydantic response_model will handle validation and conversion
-            # Ensure all fields expected by Report model are present or handled (like reviewedAt)
+            # Check if the keys exist and are not None before converting
+            if "user1ID" in report and report["user1ID"] is not None:
+                 report["user1ID"] = str(report["user1ID"])
+            if "user2ID" in report and report["user2ID"] is not None:
+                 report["user2ID"] = str(report["user2ID"])
             report.setdefault("reviewedAt", None)
             reports_list.append(report)
+            
 
         logger.info(f"Returning {len(reports_list)} reports.")
         return reports_list # Pydantic validates against List[Report]
