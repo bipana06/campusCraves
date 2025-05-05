@@ -1,3 +1,0 @@
-pytest
-httpx
-pip install pytest-cov 
