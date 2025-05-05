@@ -4,6 +4,8 @@ from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError # Keep if used
 from datetime import datetime
 import logging
+import json
+
 
 # Import necessary components
 from database import get_users_collection, get_food_collection
@@ -273,9 +275,11 @@ async def get_user(googleId: str, db: Collection = Depends(get_user_db)):
 
         # Convert _id to id for the Pydantic model
         user["id"] = str(user.pop("_id"))
+        validated_user = User(**user) #addition
+        return validated_user
 
         # Pydantic will validate and convert fields (like datetime) based on the User model
-        return user
+        # return user
 
     except HTTPException as he:
         raise he # Re-raise 404
@@ -302,13 +306,13 @@ async def get_user_profile(
     food_db: Collection = Depends(get_food_db)
 ):
     logger.info(f"Received request for user profile: netId={net_id}")
-
-    user = user_db.find_one({"netId": net_id})
-    if not user:
-        logger.warning(f"User profile not found: netId={net_id}")
-        raise HTTPException(status_code=404, detail="User not found")
-
     try:
+        user = user_db.find_one({"netId": net_id})
+        if not user:
+            logger.warning(f"User profile not found: netId={net_id}")
+            raise HTTPException(status_code=404, detail="User not found")
+
+   
         logger.info(f"Found user {net_id}, fetching profile data.")
 
         # Counts
@@ -347,7 +351,7 @@ async def get_user_profile(
 
         # Prepare response using UserProfileResponse model
         response_data = {
-            "username": user.get("fullName", "N/A"), # Use fullName as username? Check requirement
+            "username": user.get("fullName"), # Use fullName as username? Check requirement
             "email": user.get("email"),
             "profilePicture": user.get("picture", ""),
             "post_count": post_count,
@@ -438,11 +442,4 @@ async def check_email(data: EmailCheckRequest, db: Collection = Depends(get_user
         logger.error(f"Error checking email {data.email}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An error occurred while checking email existence.")
 
-# Note: The original code also had a POST /check-email endpoint at the root.
-# This seems redundant. If needed, it should be added explicitly to main.py's app instance.
-# Example in main.py if root endpoint is truly required:
-# @app.post("/check-email")
-# async def root_check_email(data: EmailCheckRequest, db: Collection = Depends(get_user_db)):
-#     # ... same logic as /api/users/check-email ...
-#     user = db.find_one({"email": data.email}, {"_id": 1})
-#     return {"exists": bool(user)}
+
