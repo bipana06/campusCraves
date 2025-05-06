@@ -29,10 +29,6 @@ except ImportError:
     pytest.exit("Could not import from 'database'. Ensure database.py exists and path is correct.", 1)
 
 
-# --- Test Functions ---
-
-# Note: These tests assume the MONGO_URI is set in the environment for the test run,
-#       similar to how the application runs. Fixtures in conftest.py handle the actual connection.
 
 def test_get_collections_return_type():
     """Tests that the getter functions return Collection objects after connection."""
@@ -55,19 +51,6 @@ def test_get_collections_idempotency():
     users_coll_2 = get_users_collection()
     assert users_coll_1 is users_coll_2
 
-# def test_database_module_variables_initialized():
-#     """Tests that the module-level variables are set after connection."""
-#     # Relies on session setup in conftest.py
-#     connect_db() # Ensure connection is attempted (it's idempotent)
-#     assert isinstance(db_client_instance, MongoClient)
-#     assert isinstance(db_instance, Database)
-#     assert isinstance(food_coll_instance, Collection)
-#     assert isinstance(report_coll_instance, Collection)
-#     assert isinstance(users_coll_instance, Collection)
-#     # Check collection names (adjust if different in your DB)
-#     assert food_coll_instance.name == "food_posts"
-#     assert report_coll_instance.name == "reports"
-#     assert users_coll_instance.name == "users"
 
 @patch('database.MongoClient') # Mock the MongoClient class
 @patch('database.os.getenv')   # Mock os.getenv
@@ -76,11 +59,7 @@ def test_connect_db_missing_uri(mock_getenv, mock_mongo_client):
     # Configure mocks
     mock_getenv.return_value = None # Simulate MONGO_URI not being set
 
-    # Reset module variables to force re-connection attempt
-    # This is tricky as they are module-level globals. Need to be careful.
-    # A better approach might be to structure database.py with classes or functions
-    # that don't rely solely on module globals for state.
-    # For now, we test the exception raising.
+
     with patch('database.client', None), \
          patch('database.db', None), \
          patch('database.food_collection', None), \

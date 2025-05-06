@@ -52,16 +52,6 @@ async def submit_report(
         logger.warning(f"Food post not found for reporting: postId={postId}")
         raise HTTPException(status_code=404, detail="Food post not found, cannot submit report.")
 
-    # Optional: Check if user1Id is trying to report their own post?
-    # food_details = food_db.find_one({"_id": post_object_id}, {"postedBy": 1})
-    # if food_details and food_details.get("postedBy") == user1Id:
-    #     raise HTTPException(status_code=400, detail="You cannot report your own post.")
-
-    # Optional: Check if user1Id already reported this postId?
-    # existing_report = report_db.find_one({"postId": postId, "user1ID": user1Id})
-    # if existing_report:
-    #     raise HTTPException(status_code=400, detail="You have already reported this post.")
-
 
     try:
         # Use the ReportCreate model potentially (adjust if needed)
@@ -76,10 +66,6 @@ async def submit_report(
             "reviewedBy": None,
             "reviewedAt": None,
         }
-
-        # Validate with Pydantic before insertion if desired
-        # report_to_insert = ReportCreate(**report_data)
-        # result = report_db.insert_one(report_to_insert.dict())
 
         result = report_db.insert_one(report_data)
         report_id = result.inserted_id
@@ -107,10 +93,6 @@ async def submit_report(
         logger.error(f"Unexpected error processing report for postId {postId}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An internal server error occurred while processing the report.")
 
-
-# GET /api/reports was defined at the root in original, needs adjustment
-# Let's assume it should be GET /api/report (plural seems more conventional REST)
-# Or keep the original path using the misc router. Sticking to original:
 @misc_report_router.get("/api/reports", response_model=List[Report]) # Full path
 async def get_reports(db: Collection = Depends(get_report_db)):
     logger.info("Received request to get all reports.")
@@ -190,8 +172,6 @@ async def update_report_status(
         raise HTTPException(status_code=500, detail="An unexpected error occurred while updating report status.")
 
 
-# Endpoint to check if a user can report a specific post
-# Path: /api/report/can-report/{post_id}/{user_id} - Fits the /api/report prefix
 @router.get("/can-report/{post_id}/{user_id}", response_model=CanReportResponse)
 async def can_report(
     post_id: str,

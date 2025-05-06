@@ -63,7 +63,3 @@ def get_users_collection():
     if users_collection is None:
         connect_db()
     return users_collection
-
-# Call connect_db() once at module level if you want connection on import
-# Or rely on the get_collection functions to establish connection lazily
-# connect_db() # Uncomment if you want eager connection

@@ -4,12 +4,6 @@ from bson import ObjectId
 import time
 from datetime import datetime
 
-# Fixtures 'client', 'test_user_data', 'other_user_data',
-# 'available_food_post', 'reported_food_post'
-# are automatically available from conftest.py
-
-# --- Test Functions ---
-
 # == POST /api/report ==
 def test_submit_report_success(client, available_food_post, other_user_data):
     """Tests successfully submitting a report."""

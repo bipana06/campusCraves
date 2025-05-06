@@ -23,8 +23,7 @@ router = APIRouter(
     tags=["Users"],
 )
 
-# Separate router for endpoints outside the /api/users prefix but user-related
-# Or handle them within this router using full path overrides
+
 misc_user_router = APIRouter(tags=["Users Misc"])
 
 
@@ -148,14 +147,6 @@ async def email_login(user: UserEmailLogin, db: Collection = Depends(get_user_db
         logger.error(f"Error during email login for {user.email}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An unexpected error occurred during login.")
 
-
-# Original code had /api/users/auth-check using UserEmailLogin but checking username?
-# Assuming it should check email like the login endpoint. Clarify if username needed.
-# Replicating original logic (checking username from UserEmailLogin which has email):
-# This seems flawed. If it's truly an auth check based on existing session/token,
-# the logic would be different (e.g., verifying a JWT).
-# If it's just another login form check, it duplicates /email-login.
-# Let's keep it but log a warning.
 @router.post("/auth-check") # Corresponds to POST /api/users/auth-check
 async def auth_check(user: UserEmailLogin, db: Collection = Depends(get_user_db)):
     logger.warning(f"Executing /api/users/auth-check endpoint. Logic may need review. Checking email: {user.email}")
@@ -201,10 +192,7 @@ async def register_user(user: UserRegistration, db: Collection = Depends(get_use
         if existing_user_google:
             logger.info(f"Updating existing user found by googleId: {user.googleId} (NetID: {existing_user_google.get('netId')})")
             update_data = {
-                # Original logic allowed updating netId here. This seems risky.
-                # If a user logs in via Google, should their netId be updatable?
-                # Commenting out netId update, adjust if needed.
-                # "netId": user.netId,
+
                 "fullName": user.fullName,
                 "phoneNumber": user.phoneNumber,
                 "picture": user.picture,
@@ -289,15 +277,6 @@ async def get_user(googleId: str, db: Collection = Depends(get_user_db)):
     except Exception as e:
         logger.error(f"Error fetching user by googleId {googleId}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An unexpected error occurred while fetching user data.")
-
-
-# Profile endpoint needs net_id, which might be different from the /api/users prefix logic
-# Option 1: Keep it here with full path
-# Option 2: Move to a different router (like misc_user_router)
-# Option 3: Change the path to fit /api/users/{net_id}/profile (RESTful)
-# Keeping original path structure for compatibility:
-# Need to adjust the router prefix or use the misc_user_router.
-# Let's use misc_user_router for endpoints not fitting the /api/users prefix naturally.
 
 @misc_user_router.get("/api/users/profile/{net_id}", response_model=UserProfileResponse) # Full path specified
 async def get_user_profile(
@@ -427,9 +406,6 @@ async def get_user_by_googleId(googleId: str, db: Collection = Depends(get_user_
         logger.error(f"Error fetching netId for googleId {googleId}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An unexpected error occurred while fetching netId.")
 
-# Endpoint to check if an email exists
-# This was defined twice in the original code with different paths.
-# Using the /api/users prefix seems more appropriate.
 @router.post("/check-email") # Corresponds to POST /api/users/check-email
 async def check_email(data: EmailCheckRequest, db: Collection = Depends(get_user_db)):
     logger.info(f"Checking existence of email: {data.email}")

@@ -3,8 +3,6 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 import os
 
-# Fixture 'client' is automatically available from conftest.py
-
 # --- Test Functions ---
 
 def test_read_root(client: TestClient):
@@ -13,8 +11,7 @@ def test_read_root(client: TestClient):
     assert response.status_code == 200
     assert response.json() == {"message": "Welcome to the Food Sharing API!"}
 
-# Test startup event indirectly by checking DB connection status after client creation
-# The TestClient context manager handles startup/shutdown events.
+
 def test_startup_event_connects_db(client: TestClient):
     """
     Tests if the startup event successfully connects to the database.

@@ -6,8 +6,6 @@ import time
 from datetime import datetime
 from unittest.mock import patch, MagicMock # Added for mocking
 
-# Fixtures 'client', 'test_user_data', 'other_user_data', 'completed_food_post'
-# are assumed to be available from conftest.py
 
 # --- Helper ---
 def generate_unique_user_data(prefix: str):
@@ -414,12 +412,6 @@ def test_get_user_profile_success(client, test_user_data, other_user_data, compl
 
 def test_get_user_profile_no_history(client, test_user_data):
     """Tests retrieving profile for user known to have no post/receive history."""
-    # IMPORTANT: This test requires that the 'test_user_data' fixture corresponds to
-    # a user who genuinely has NO 'completed' posts as poster or receiver in the DB
-    # at the time this test runs. Fixture setup/cleanup is crucial here.
-    # You might need a specific fixture for a 'clean' user.
-    # Assuming test_user_data might have history from other tests, let's create a new one
-    # For a truly isolated test, create a user specifically for this test case.
     new_user_data = generate_unique_user_data("profile_clean")
     # Minimal signup to create the user
     signup_payload = {"username": new_user_data["username"], "email": new_user_data["email"], "password": new_user_data["password"], "netId": new_user_data["netId"], "fullName": new_user_data["fullName"]}
@@ -569,8 +561,6 @@ def test_get_user_by_googleid_validation_error(mock_find_one, client, test_user_
     # --- Arrange ---
     google_id_to_test = test_user_data['googleId']
 
-    # Create mock data returned by find_one that *violates* the User response model
-    # Example: Missing a required field like 'email' (adjust based on your User model)
     invalid_user_data_from_db = {
         "_id": ObjectId(), # Must be present to be popped later
         "googleId": google_id_to_test,
@@ -580,8 +570,7 @@ def test_get_user_by_googleid_validation_error(mock_find_one, client, test_user_
         "createdAt": datetime.now(),
         "updatedAt": datetime.now(),
         "role": "user"
-        # Add other fields as needed, but ensure at least one required field is missing
-        # or has the wrong type according to your 'User' Pydantic model.
+
     }
     mock_find_one.return_value = invalid_user_data_from_db
 

@@ -20,38 +20,6 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-# --- Food Models ---
-# No specific models defined in original, data passed via Form/Body.
-# If you wanted strict models for food endpoints, define them here.
-# Example:
-# class FoodBase(BaseModel):
-#     foodName: str
-#     quantity: int
-#     category: str
-#     dietaryInfo: str
-#     pickupLocation: str
-#     pickupTime: str
-#     photo: str # Could be a URI string or a nested model
-#     user: str # Consider using a user ID reference
-#     expirationTime: str # Consider using datetime
-#     createdAt: str # Consider using datetime
-
-# class FoodCreate(FoodBase):
-#     pass
-
-# class Food(FoodBase):
-#     id: str # Representing _id as string
-#     status: str
-#     postedBy: str
-#     reportCount: int
-#     timestamp: datetime
-#     reservedBy: Optional[str] = "None"
-
-#     class Config:
-#         orm_mode = True # For potential ORM use or dict conversion
-#         allow_population_by_field_name = True
-#         json_encoders = {ObjectId: str} # Ensure ObjectId is serialized
-
 
 # --- Report Models ---
 class ReportBase(BaseModel):
@@ -65,8 +33,6 @@ class ReportCreate(ReportBase):
     pass
 
 class Report(ReportBase):
-    # Use Field Aliases if your DB field is '_id' but you want 'id' in the model
-    # id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     id: Optional[str] = None # Keep simple string if manually converting in endpoint
     submittedAt: datetime
     reviewStatus: str = "pending"
@@ -95,7 +61,6 @@ class UserCreate(UserBase): # For email/password signup
     password: str # Handled separately for hashing
 
 class User(UserBase): # Represents user data returned (excluding password)
-    # id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     id: Optional[str] = None # Keep simple string if manually converting
     googleId: Optional[str] = None # Make optional if not always present
     username: Optional[str] = None # Make optional if not always present

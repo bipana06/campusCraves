@@ -3,10 +3,6 @@ import hashlib
 from unittest.mock import patch, MagicMock
 import utils # Assuming your utils.py is in the same directory or can be imported like this
 
-# Mock the logger to prevent actual logging during tests if desired,
-# although for coverage testing, letting it run is fine.
-# If you wanted to assert on logger calls, you would mock it properly.
-
 def test_hash_password_exception_handling():
     """
     Tests the exception handling in the hash_password function.
@@ -18,13 +14,6 @@ def test_hash_password_exception_handling():
 
         with pytest.raises(ValueError, match="Could not hash password"):
             utils.hash_password("test_password")
-
-        # Optional: Assert that logger.error was called (requires mocking the logger)
-        # with patch('utils.logger') as mock_logger:
-        #     with pytest.raises(ValueError):
-        #          utils.hash_password("test_password")
-        #     mock_logger.error.assert_called_once()
-
 
 def test_verify_password_exception_handling():
     """
@@ -40,8 +29,3 @@ def test_verify_password_exception_handling():
 
         # The function should catch the exception and return False
         assert utils.verify_password(stored_hash, provided_password) is False
-
-        # Optional: Assert that logger.error was called (requires mocking the logger)
-        # with patch('utils.logger') as mock_logger:
-        #     assert utils.verify_password(stored_hash, provided_password) is False
-        #     mock_logger.error.assert_called_once()

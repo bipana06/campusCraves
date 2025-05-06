@@ -78,10 +78,7 @@ async def post_food(
         raise HTTPException(status_code=500, detail="An unexpected error occurred while posting food.")
 
 
-# Note: The original get_food returns a dict {"food_posts": [...]}.
-# If you define a Pydantic model 'Food', you can use response_model=List[Food]
-# but you'll need to adjust the return format or use a wrapper model.
-# Keeping original return structure for compatibility.
+
 @router.get("") # Corresponds to GET /api/food
 async def get_food(db: Collection = Depends(get_food_db)):
     logger.info("Received request to get all food posts.")
