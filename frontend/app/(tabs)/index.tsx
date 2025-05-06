@@ -71,21 +71,20 @@ const AppEntry = () => {
         fetchUserProfile();
     }, []);
 
-    const handleReport = () => {
-        try {
-            router.push({
-                pathname: '../ReportScreen',
-                params: { foodId: item.id, foodName: item.foodName }
-            });
-        } catch (error) {
-            console.error('Report navigation error:', error);
-        }
-    };
+    // const handleReport = () => {
+    //     try {
+    //         router.push({
+    //             pathname: '../ReportScreen',
+    //             params: { foodId: item.id, foodName: item.foodName }
+    //         });
+    //     } catch (error) {
+    //         console.error('Report navigation error:', error);
+    //     }
+    // };
+    
     const handleLogout = async () => {
         try {
-          // Remove all authentication-related items from AsyncStorage
           await AsyncStorage.multiRemove(['userToken', 'userInfo', 'userProfile']);
-          // Navigate to the authentication page
           router.replace("/screens/pageZero");
         } catch (error) {
           console.error("Error during logout:", error);
@@ -113,8 +112,6 @@ const AppEntry = () => {
     return (
     <View style={styles.container}>
         <Text style={styles.welcomeText}> Welcome, <Text style = {styles.italics}>{userData?.username || "Foodie"}!</Text></Text>
-        {/* <Text style={styles.welcomeText}>Welcome, {userData?.username || "Foodie"}!</Text> */}
-        {/* <Text style ={styles.welcomeText}>Welcome!</Text> */}
         <Text style={styles.subText}> Choose an option below to get started. </Text>
         
         <TouchableOpacity

@@ -60,21 +60,6 @@ const FoodPostScreen = () => {
         return Object.keys(tempErrors).length === 0;
     };
 
-    // const pickImage = () => {
-    //     ImagePicker.launchImageLibrary({ mediaType: "photo" }, (response) => {
-    //         if (response.assets && response.assets.length > 0) {
-    //             const selectedPhoto = response.assets[0];
-    //             if (selectedPhoto.uri) {
-    //                 setPhoto({
-    //                     uri: selectedPhoto.uri,
-    //                     type: selectedPhoto.type || "image/jpeg",
-    //                     name: selectedPhoto.fileName || selectedPhoto.uri.split("/").pop(),
-    //                 });
-    //                 setErrors(prev => ({ ...prev, photo: "" }));
-    //             }
-    //         }
-    //     });
-    // };
     const pickImage = () => {
         ImagePicker.launchImageLibrary({ mediaType: "photo" }, (response) => {
             if (response.assets && response.assets.length > 0) {
@@ -156,9 +141,6 @@ const FoodPostScreen = () => {
             );
         }
         
-        // catch (error) {
-        //     Alert.alert("Error", "Failed to post food.");
-        // }
     };
 
     return (

@@ -115,23 +115,7 @@ export const searchFoodItems = async (filters) => {
     }
  };
 
-// // New user-related functions
-// export const registerUser = async (userData) => {
-//     try {
-//         console.log("Registering user:", userData);
-        
-//         // The backend expects a JSON body for user registration
-//         const response = await axios.post(`${USER_API_URL}/register`, userData, {
-//             headers: { "Content-Type": "application/json" },
-//         });
-        
-//         console.log("User registration response:", response.data);
-//         return response.data;
-//     } catch (error) {
-//         console.error("Error registering user:", error);
-//         throw error;
-//     }
-// };
+
 export const registerUser = async (userData) => {
     try {
         console.log("Registering user:", userData);
@@ -171,38 +155,6 @@ export const registerUser = async (userData) => {
     }
 };
 
-
-// export const getUser = async (googleId) => {
-//     try {
-//         if (!googleId) {
-//             throw new Error("Google ID is required to fetch user data");
-//         }
-        
-//         console.log("Fetching user with Google ID:", googleId);
-//         const response = await axios.get(`${USER_API_URL}/${googleId}`);
-//         console.log("User data retrieved:", response.data);
-//         return response.data;
-//     } catch (error) {
-//         console.error("Error fetching user:", error);
-//         throw error;
-//     }
-// };
-
-// export const getNetId = async (googleId) => {
-//     try {
-//         if (!googleId) {
-//             throw new Error("Google ID is required to fetch Net ID");
-//         }
-
-//         console.log("Fetching Net ID for Google ID:", googleId);
-//         const response = await axios.get(`${USER_API_URL}/netid/${googleId}`); // Use path parameter
-//         console.log("Net ID retrieved:", response.data.netId);
-//         return response.data.netId;
-//     } catch (error) {
-//         console.error("Error fetching Net ID:", error.response?.data || error.message);
-//         throw error;
-//     }
-// };
 
 export const getUser = async (netId) => {
     try {
