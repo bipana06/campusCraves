@@ -70,7 +70,13 @@ CampusCraves is a platform designed to facilitate food sharing within a campus c
 - **GET** `/api/food`: Retrieve all food posts.
 - **POST** `/api/food/reserve`: Reserve a food item.
 - **POST** `/api/food/complete`: Mark a food transaction as complete.
-
+  
+## Testing
+To run our unit test suite, first install all the requirements from tests/requirements.txt, and then follow following commands:
+```
+pytest --cov=main --cov=models --cov=database --cov=utils --cov=routers --cov-report=html
+coverage report
+```
 ## Contributing
 
 Contributors:
